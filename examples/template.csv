@@ -1,0 +1,4 @@
+label,location,lineage,function,CD62L,CCR7,CD45RA,CD45RO,CD95,CD69,CD25,PD1,TOX,TCF1,SLAMF6,TIM3,CD101,migration_evidence,migration_evidence_note,differentiation_override,differentiation_override_note,antigen_status,antigen_note
+example_naive,,CD4+,,+,+,+,,-,,,,,,,,,,,,,,
+example_exhausted_progenitor,,CD8+,,-,,,,,,,+,+,+,+,-,,R,Parabiosis confirms tissue residency,,,+,Chronic LCMV infection model
+my_sample_1,,,,,,,,,,,,,,,,,,,,,,

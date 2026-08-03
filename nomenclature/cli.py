@@ -1,15 +1,21 @@
 """Interactive command-line flow: ask for markers/metadata for one T cell
 population at a time, print the resulting nomenclature + audit report, and
 optionally repeat for more populations / save everything to CSV.
+
+Markers are asked in logical groups (migration, naive/memory, activation,
+exhaustion, exhaustion subtype), each with a one-line explanation of what
+the group determines and what each marker means — so a user doesn't need to
+already have the 13-marker panel memorized.
 """
 from __future__ import annotations
 
 import csv
-import sys
 from typing import List
 
 from .assemble import generate_nomenclature
-from .models import MARKER_NAMES, TCellRecord, normalize_marker_value
+from .models import MARKER_DESCRIPTIONS, MARKER_GROUPS, MARKER_NAMES, TCellRecord, normalize_marker_value
+
+_DIVIDER = "-" * 60
 
 
 def _prompt(text: str, default: str = "") -> str:
@@ -18,26 +24,52 @@ def _prompt(text: str, default: str = "") -> str:
     return raw if raw else default
 
 
+def _prompt_yes_no(text: str, default_no: bool = True) -> bool:
+    default = "N" if default_no else "Y"
+    raw = _prompt(f"{text} (y/n)", default)
+    return raw.strip().upper().startswith("Y")
+
+
 def _prompt_marker(name: str) -> str:
+    description = MARKER_DESCRIPTIONS.get(name, "")
     while True:
-        raw = input(f"  {name} (+ / - / blank=not measured): ").strip()
+        raw = input(f"  {name} [{description}]\n    + / - / (Enter = not measured): ").strip()
         if raw == "":
             return "NA"
         value = normalize_marker_value(raw)
-        if raw.upper() not in ("+", "-", "NA") and value == "NA" and raw.upper() not in ("NA",):
-            print(f"    Unrecognized value '{raw}' -> treated as not measured (NA).")
+        if value == "NA" and raw.upper() not in ("NA", "N/A", "U", "UNKNOWN"):
+            print(f"    '{raw}' not recognized as +/- -> treated as not measured (NA).")
         return value
 
 
+def _print_intro() -> None:
+    print(_DIVIDER)
+    print("T cell modular nomenclature — interactive mode")
+    print(_DIVIDER)
+    print(
+        "For each marker you'll be asked to type '+', '-', or just press Enter\n"
+        "if it wasn't measured. Markers you skip are never guessed at — the\n"
+        "corresponding part of the name is simply left blank/'U', with a note\n"
+        "in the report explaining why."
+    )
+
+
 def collect_record_interactively() -> TCellRecord:
-    print("\n--- New T cell population ---")
+    print("\n" + _DIVIDER)
+    print("New T cell population")
+    print(_DIVIDER)
     label = _prompt("Sample / population label (optional)")
-    location = _prompt("Tissue / anatomical location (optional)")
+    location = _prompt("Tissue / anatomical location, e.g. 'Liver' (optional)")
     lineage = _prompt("Lineage, e.g. 'CD8+' (optional)")
     function = _prompt("Function, e.g. 'TH1' (optional)")
 
-    print("Enter marker gating results (press Enter to leave a marker as not measured):")
-    markers = {name: _prompt_marker(name) for name in MARKER_NAMES}
+    print(f"\n{_DIVIDER}\nMarker gating results\n{_DIVIDER}")
+    markers = {}
+    for group_title, group_markers, group_note in MARKER_GROUPS:
+        print(f"\n> {group_title}")
+        print(f"  ({group_note})")
+        for name in group_markers:
+            markers[name] = _prompt_marker(name)
 
     record = TCellRecord(
         label=label, location=location, lineage=lineage, function=function, markers=markers
@@ -49,43 +81,78 @@ def collect_record_interactively() -> TCellRecord:
 
     migration_preview = classify_migration(markers)
     if migration_preview.code == "D":
-        print(f"(Migration classified as D: {migration_preview.rationale})")
-        wants_sub = _prompt("Provide migration subscript evidence B/W/R? (y/N)", "N")
-        if wants_sub.strip().upper().startswith("Y"):
-            record.migration_evidence = _prompt("  Subscript (B=blood, W=widespread, R=resident)")
-            record.migration_evidence_note = _prompt("  Justification / assay evidence")
+        print(f"\n> Migration was classified as D (disseminated): {migration_preview.rationale}")
+        print(
+            "  D alone just means 'not confirmed to enter lymph nodes'. If you have extra\n"
+            "  assay evidence (e.g. parabiosis, recirculation study), you can add a subscript:\n"
+            "    B = isolated from blood, no further evidence\n"
+            "    W = widespread recirculation confirmed (non-HEV route)\n"
+            "    R = tissue residency confirmed"
+        )
+        if _prompt_yes_no("  Add a migration subscript?"):
+            while True:
+                letter = _prompt("    Subscript letter (B/W/R)").strip().upper()
+                if letter in ("B", "W", "R"):
+                    break
+                print(f"    '{letter}' isn't one of B/W/R — try again.")
+            record.migration_evidence = letter
+            record.migration_evidence_note = _prompt("    Justification / assay evidence")
 
-    wants_override = _prompt("Manually override differentiation state (e.g. 'G' for anergic)? (y/N)", "N")
-    if wants_override.strip().upper().startswith("Y"):
-        record.differentiation_override = _prompt("  Differentiation override code")
-        record.differentiation_override_note = _prompt("  Justification")
+    print(
+        "\n> Differentiation state override\n"
+        "  Anergic (G) is a functional definition and can't be read off markers —\n"
+        "  it's only ever set here, by you, with a justification."
+    )
+    if _prompt_yes_no("  Manually set/override the differentiation state?"):
+        record.differentiation_override = _prompt("    Differentiation code (e.g. 'G')")
+        record.differentiation_override_note = _prompt("    Justification")
 
-    antigen = _prompt("Antigen status: '+' persistent, '0' cleared, blank = not asserted", "")
+    print(
+        "\n> Antigen status\n"
+        "  This can never be read from markers — it depends on your experimental\n"
+        "  design (e.g. is the infection/tumor still present?). Leave blank if you\n"
+        "  don't want to make a claim either way."
+    )
+    while True:
+        antigen = _prompt("  Antigen status: '+' persistent, '0' cleared, blank = not asserted", "")
+        if antigen in ("", "+", "0"):
+            break
+        print(f"    '{antigen}' isn't one of '+', '0', or blank — try again.")
     record.antigen_status = antigen
     if antigen:
-        record.antigen_note = _prompt("  Justification for antigen status")
+        record.antigen_note = _prompt("    Justification for antigen status")
 
     return record
 
 
+def _print_result(result) -> None:
+    print("\n" + _DIVIDER)
+    print(f"NOMENCLATURE: {result.nomenclature}")
+    print(_DIVIDER)
+    print("Slot-by-slot breakdown:")
+    print(f"  Lineage         : {result.lineage or '(not given)'}")
+    print(f"  Function        : {result.function or '(not given)'}")
+    print(f"  Migration       : {result.migration or '(not given)'}{' ' + result.migration_subscript if result.migration_subscript else ''}")
+    print(f"  Differentiation : {result.differentiation or '(not assigned)'}{result.differentiation_subscript}")
+    print(f"  Antigen status  : {result.antigen or '(not asserted)'}")
+    print("\nWhy (audit trail — check this before trusting the name):")
+    for line in result.rationale.split("\n"):
+        print(f"  {line}")
+
+
 def run_interactive() -> None:
+    _print_intro()
     records: List[TCellRecord] = []
     while True:
         record = collect_record_interactively()
         result = generate_nomenclature(record)
-
-        print("\n=== Result ===")
-        print(f"Nomenclature: {result.nomenclature}")
-        print("Rationale:")
-        print(result.rationale)
+        _print_result(result)
         records.append(record)
 
-        again = _prompt("\nAdd another population? (y/N)", "N")
-        if not again.strip().upper().startswith("Y"):
+        if not _prompt_yes_no("\nAdd another population?"):
             break
 
-    save = _prompt("\nSave all results to a CSV file? (y/N)", "N")
-    if save.strip().upper().startswith("Y"):
+    if _prompt_yes_no("\nSave all results to a CSV file?"):
         out_path = _prompt("Output CSV path", "nomenclature_output.csv")
         _write_records_csv(records, out_path)
         print(f"Saved {len(records)} record(s) to {out_path}")

@@ -23,6 +23,35 @@ MARKER_NAMES = [
     "TCF1", "SLAMF6", "TIM3", "CD101",  # exhaustion progenitor/terminal
 ]
 
+# One-line, plain-language meaning for each marker — shown in the CLI so
+# users don't need to already have the marker panel memorized.
+MARKER_DESCRIPTIONS = {
+    "CD62L": "L-selectin. Needed to enter lymph nodes through HEVs.",
+    "CCR7": "Chemokine receptor that guides homing to lymph nodes.",
+    "CD45RA": "Isoform typically seen on naive (and some terminally-differentiated) T cells.",
+    "CD45RO": "Isoform typically seen on memory T cells.",
+    "CD95": "Fas. Used to separate true naive cells from stem-cell memory cells.",
+    "CD69": "Early marker of recent TCR/cytokine activation.",
+    "CD25": "IL-2 receptor alpha chain; induced by recent activation.",
+    "PD1": "Inhibitory receptor induced by chronic antigen stimulation.",
+    "TOX": "Transcription factor that drives the exhaustion program.",
+    "TCF1": "Transcription factor that maintains stem-like/progenitor exhausted cells.",
+    "SLAMF6": "Surface marker associated with progenitor exhausted cells.",
+    "TIM3": "Surface marker associated with terminally exhausted cells.",
+    "CD101": "Surface marker associated with terminally exhausted cells.",
+}
+
+# Markers grouped by which nomenclature slot they inform, with a short
+# blurb per group — used to walk the CLI user through the panel in a
+# logical order instead of one flat list of 13 abbreviations.
+MARKER_GROUPS = [
+    ("Migration (CD62L / CCR7)", ["CD62L", "CCR7"], "Determines S (can enter lymph nodes) vs D (disseminated)."),
+    ("Naive vs. memory (CD45RA / CD45RO / CD95)", ["CD45RA", "CD45RO", "CD95"], "Determines the Naive (N) call."),
+    ("Recent activation (CD69 / CD25)", ["CD69", "CD25"], "Determines the Activated (A) call, together with PD1/TOX below."),
+    ("Chronic stimulation / exhaustion (PD1 / TOX)", ["PD1", "TOX"], "PD1+ and TOX+ together determine the Exhausted (X) call."),
+    ("Exhaustion subtype (TCF1 / SLAMF6 / TIM3 / CD101)", ["TCF1", "SLAMF6", "TIM3", "CD101"], "Only relevant if X was called above — splits it into progenitor (p) or terminal (t)."),
+]
+
 _POS = {"+", "POS", "POSITIVE", "TRUE", "1"}
 _NEG = {"-", "NEG", "NEGATIVE", "FALSE", "0"}
 _NA = {"NA", "N/A", "", "UNKNOWN", "U", "NONE", "NOT MEASURED", "NOTMEASURED"}

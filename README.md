@@ -22,6 +22,27 @@ Python 3.9+, no third-party dependencies for the core program.
 pip install pytest
 ```
 
+## Quickstart (try it in under a minute)
+
+Don't type anything yet — just run the bundled example and see what comes out:
+
+```
+python main.py --csv examples/template.csv --out examples/template_output.csv
+```
+
+Open `examples/template_output.csv`. Two rows should read:
+
+- `example_naive` → `CD4+ TSN`
+- `example_exhausted_progenitor` → `CD8+ TDRXp+`
+
+Once that makes sense, open [`examples/template.csv`](examples/template.csv),
+duplicate the blank `my_sample_1` row, fill in whatever markers/columns you
+actually have (leave the rest blank), and re-run the command above. See
+[`examples/README.md`](examples/README.md) for what every column means.
+
+If you'd rather be walked through it question-by-question instead of editing
+a CSV, use interactive mode instead — see below.
+
 ## Usage
 
 ### Interactive mode
@@ -30,17 +51,27 @@ pip install pytest
 python main.py
 ```
 
-Walks through one T cell population at a time: label/location/lineage/
-function, then +/-/blank for each of the 13 markers the program understands,
-then optional migration-subscript evidence, differentiation override, and
-antigen status. Prints the nomenclature string plus a full rationale for
-every slot, and can save everything to CSV at the end.
+Walks through one T cell population at a time. Markers are asked in
+logical groups (migration, naive/memory, activation, exhaustion, exhaustion
+subtype), each with a short explanation of what the group determines and
+what each marker means, so you don't need to already have the marker panel
+memorized. For every marker: type `+`, `-`, or just press Enter if it wasn't
+measured — nothing is ever guessed from a blank answer.
+
+After each population, you get the nomenclature string plus a slot-by-slot
+breakdown and a full audit trail explaining why each slot was called the
+way it was. You can add more populations and save everything to CSV at the
+end.
 
 ### CSV batch mode
 
 ```
 python main.py --csv input.csv --out output.csv
 ```
+
+Easiest way to start: copy [`examples/template.csv`](examples/template.csv)
+and edit it — see [`examples/README.md`](examples/README.md) for a full
+column-by-column reference.
 
 `input.csv` columns (all optional, matched case-insensitively, ignoring
 spaces/underscores/hyphens):
@@ -56,6 +87,27 @@ spaces/underscores/hyphens):
 
 Output = input columns + `nomenclature`, `migration`, `migration_subscript`,
 `differentiation`, `differentiation_subscript`, `antigen`, `rationale`.
+
+## What do these markers mean?
+
+If the marker abbreviations aren't already familiar, here's what each one
+is and which slot it feeds into:
+
+| Marker | What it is | Feeds into |
+|---|---|---|
+| `CD62L` | L-selectin — needed to enter lymph nodes through HEVs | Migration |
+| `CCR7` | Chemokine receptor that guides homing to lymph nodes | Migration |
+| `CD45RA` | Isoform typically seen on naive (and some terminally-differentiated) T cells | Differentiation (N) |
+| `CD45RO` | Isoform typically seen on memory T cells | Differentiation (N/M) |
+| `CD95` | Fas — separates true naive cells from stem-cell memory cells | Differentiation (N) |
+| `CD69` | Early marker of recent TCR/cytokine activation | Differentiation (A) |
+| `CD25` | IL-2 receptor alpha chain, induced by recent activation | Differentiation (A) |
+| `PD1` | Inhibitory receptor induced by chronic antigen stimulation | Differentiation (X) |
+| `TOX` | Transcription factor that drives the exhaustion program | Differentiation (X) |
+| `TCF1` | Maintains stem-like/progenitor exhausted cells | Exhaustion subtype (p) |
+| `SLAMF6` | Surface marker associated with progenitor exhausted cells | Exhaustion subtype (p) |
+| `TIM3` | Surface marker associated with terminally exhausted cells | Exhaustion subtype (t) |
+| `CD101` | Surface marker associated with terminally exhausted cells | Exhaustion subtype (t) |
 
 ## Nomenclature format
 
