@@ -75,26 +75,31 @@ def collect_record_interactively() -> TCellRecord:
         label=label, location=location, lineage=lineage, function=function, markers=markers
     )
 
-    # Migration subscript is only meaningful once migration is known to be
-    # 'D'; compute it now just to decide whether to prompt.
-    from .slots import classify_migration
+    # Which subscripts are offered depends on the migration code: B is valid
+    # on S, D or U; W is valid on S or D; R is valid on D only (Masopust et
+    # al., Nat Rev Immunol 2026 — "Migration properties").
+    from .slots import _VALID_SUBSCRIPT_BY_MIGRATION, classify_migration
 
     migration_preview = classify_migration(markers)
-    if migration_preview.code == "D":
-        print(f"\n> Migration was classified as D (disseminated): {migration_preview.rationale}")
+    valid_subscripts = sorted(_VALID_SUBSCRIPT_BY_MIGRATION.get(migration_preview.code, set()))
+    if valid_subscripts:
+        print(f"\n> Migration was classified as {migration_preview.code}: {migration_preview.rationale}")
+        subscript_meanings = {
+            "B": "B = isolated from blood, no further evidence",
+            "W": "W = widespread recirculation confirmed (non-HEV route)",
+            "R": "R = tissue residency confirmed",
+        }
         print(
-            "  D alone just means 'not confirmed to enter lymph nodes'. If you have extra\n"
-            "  assay evidence (e.g. parabiosis, recirculation study), you can add a subscript:\n"
-            "    B = isolated from blood, no further evidence\n"
-            "    W = widespread recirculation confirmed (non-HEV route)\n"
-            "    R = tissue residency confirmed"
+            "  If you have extra assay evidence (e.g. parabiosis, recirculation study,\n"
+            "  or the cell was simply drawn from blood), you can add a subscript:\n"
+            + "\n".join(f"    {subscript_meanings[s]}" for s in valid_subscripts)
         )
         if _prompt_yes_no("  Add a migration subscript?"):
             while True:
-                letter = _prompt("    Subscript letter (B/W/R)").strip().upper()
-                if letter in ("B", "W", "R"):
+                letter = _prompt(f"    Subscript letter ({'/'.join(valid_subscripts)})").strip().upper()
+                if letter in valid_subscripts:
                     break
-                print(f"    '{letter}' isn't one of B/W/R — try again.")
+                print(f"    '{letter}' isn't valid for migration='{migration_preview.code}' — try again.")
             record.migration_evidence = letter
             record.migration_evidence_note = _prompt("    Justification / assay evidence")
 

@@ -6,3 +6,6 @@ __pycache__/
 venv/
 *.log
 examples/template_output.csv
+
+# Copyrighted journal PDF — kept local for reference, never committed
+*.pdf

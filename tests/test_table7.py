@@ -1,11 +1,13 @@
 """Unit tests.
 
-Only two of the cases below (test_liver_cd8_disseminated_unknown_recency and
-test_cd8_disseminated_resident_exhausted_progenitor_persistent) come verbatim
-from the worked examples given in the project brief (representing the kind
-of example found in the paper's Table 7). The rest are additional MVP
-logic-coverage tests authored for this implementation, since the full paper
-table text was not available while building this program.
+Four cases come verbatim from Table 7 of Masopust et al., "Guidelines for
+T cell nomenclature", Nat Rev Immunol 26:298-313 (2026):
+test_liver_cd8_disseminated_unknown_recency ("Liver CD8+ TD"),
+test_cd8_disseminated_resident_exhausted_progenitor_persistent
+("CD8+ TDRXp+"), test_migration_subscript_b_valid_on_unknown_migration
+("CD8+ TUBM"), and test_migration_subscript_w_valid_on_secondary_lymphoid
+(the paper's prose "SW" example). The rest are additional logic-coverage
+tests authored for this implementation.
 """
 import csv
 import os
@@ -110,12 +112,51 @@ def test_migration_subscript_ignored_without_evidence():
 
 
 def test_migration_subscript_ignored_when_not_disseminated():
+    # R is only ever valid on D (Masopust et al. 2026, "Migration properties").
     markers = blank_markers()
     markers["CD62L"] = "+"
     markers["CCR7"] = "+"
     record = TCellRecord(markers=markers, migration_evidence="R", migration_evidence_note="irrelevant")
     result = generate_nomenclature(record)
     assert result.migration == "S"
+    assert result.migration_subscript == ""
+    assert "ignored" in result.rationale
+
+
+def test_migration_subscript_b_valid_on_unknown_migration():
+    # "CD8+ TUBM" is a worked example straight from the paper's Table 7:
+    # blood-drawn, migration otherwise unmeasured, memory.
+    record = TCellRecord(
+        lineage="CD8+",
+        markers=blank_markers(),
+        migration_evidence="B",
+        migration_evidence_note="Isolated from blood",
+        differentiation_override="M",
+        differentiation_override_note="Claimed memory cell",
+    )
+    result = generate_nomenclature(record)
+    assert result.migration == "U"
+    assert result.migration_subscript == "B"
+    assert result.nomenclature == "CD8+ TUBM"
+
+
+def test_migration_subscript_w_valid_on_secondary_lymphoid():
+    # Paper's prose example: a CD62L+/CCR7+ cell that also recirculates
+    # through non-lymphoid tissue would be "SW".
+    markers = blank_markers()
+    markers["CD62L"] = "+"
+    markers["CCR7"] = "+"
+    record = TCellRecord(markers=markers, migration_evidence="W", migration_evidence_note="Recirculation confirmed")
+    result = generate_nomenclature(record)
+    assert result.migration == "S"
+    assert result.migration_subscript == "W"
+
+
+def test_migration_subscript_w_ignored_on_unknown_migration():
+    # W is only valid on S or D, not U.
+    record = TCellRecord(markers=blank_markers(), migration_evidence="W", migration_evidence_note="irrelevant")
+    result = generate_nomenclature(record)
+    assert result.migration == "U"
     assert result.migration_subscript == ""
     assert "ignored" in result.rationale
 

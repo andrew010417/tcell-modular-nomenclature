@@ -133,10 +133,20 @@ validated against). Examples:
 | CD62L and CCR7 both not measured | `U` |
 | Only one of CD62L/CCR7 measured, and it's positive (can't confirm S or D) | `U` (extension beyond the paper's literal wording — see code comment in `nomenclature/slots.py`) |
 
-Migration subscript `B`/`W`/`R` only applies when migration = `D`, and is
-**never** inferred from markers — it requires an explicit user-supplied
-evidence code + justification, because the subscript is itself a claim
-about additional assay evidence (recirculation study, parabiosis, etc.).
+Migration subscripts are **never** inferred from markers — each requires an
+explicit user-supplied evidence code + justification, because the subscript
+is itself a claim about additional assay evidence (blood draw, recirculation
+study, parabiosis, etc.). Which subscript is valid depends on the migration
+code it's attached to (per the paper's "Migration properties" section):
+
+| Subscript | Valid on | Meaning |
+|---|---|---|
+| `B` | S, D, **or U** | isolated from blood, no further migration claim |
+| `W` | S **or** D | widespread — recirculates through non-lymphoid tissue |
+| `R` | D only | resident — parked within an organ/vascular compartment |
+
+(e.g. `CD8+ TUBM` — blood-drawn, migration otherwise unknown, memory — is a
+valid worked example from the paper's Table 7.)
 
 ### Differentiation (N / A / M / X / G)
 
@@ -170,6 +180,30 @@ justification note.
    they require explicit user input, never auto-derived from CD62L/CCR7.
 3. Antigen status is never marker-derived — always a direct user assertion.
 4. Every slot is optional; a bare lineage alone is a valid, complete run.
+
+## Known deviations from the paper
+
+Verified directly against the primary source (Masopust et al., *Nat Rev
+Immunol* 26:298–313, 2026), two gaps remain, left as-is pending a decision
+rather than silently changed:
+
+1. **Migration defaults to `U` when unmeasured; the paper treats `U` as an
+   optional, deliberate claim.** Table 7's own examples show a fully
+   uncharacterized cell rendered as just `CD4+ T cell` (no `U`), and Box 2's
+   worked example calls a CD44low/CD62L+ population `CD4+ TN` — no migration
+   letter at all, despite CD62L+ being known. This program always outputs
+   S/D/U (never blank) for the migration slot, matching this project's own
+   "never guess, but never omit either" convention rather than the paper's
+   "omit unless you want to assert unknown" convention. Changing this would
+   affect `TU`-shaped output for any record with no CD62L/CCR7 data.
+2. **`p`/`t` subscripts are only computed for `X` (exhausted).** The paper
+   describes `Ap` (memory precursor effector), `At` (short-lived terminal
+   effector) and `Mp` (stem-cell memory) as valid combinations too — this
+   program has no marker-driven path to produce those (only `differentiation_
+   override` can force an arbitrary code+subscript by hand). Adding automatic
+   Ap/At/Mp classification would need additional marker fields beyond the
+   current 13-marker panel (e.g. KLRG1, CD127, CD27 for the CD8+ effector
+   subsets Table 2 describes).
 
 ## Scope / out of scope
 

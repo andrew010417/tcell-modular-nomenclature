@@ -18,6 +18,17 @@ from typing import Dict, Optional
 from .models import SlotResult, get_marker
 
 VALID_MIGRATION_SUBSCRIPTS = {"B", "W", "R"}
+
+# Which subscripts are valid for which migration code, per the paper's text:
+# "B ... is appended to S, D or U"; "W is appended to S or D"; "R is appended
+# as a subscript to D" only. (Masopust et al., Nat Rev Immunol 2026, "Migration
+# properties" section; worked examples include CD8+ TUBM and the prose example
+# "SW" for a CD62L+/CCR7+ cell that also recirculates through non-lymphoid tissue.)
+_VALID_SUBSCRIPT_BY_MIGRATION = {
+    "S": {"B", "W"},
+    "D": {"B", "W", "R"},
+    "U": {"B"},
+}
 _MIGRATION_SUBSCRIPT_LABELS = {
     "en": {
         "B": "blood (isolated from blood, no additional migration evidence)",
@@ -89,42 +100,47 @@ def classify_migration_subscript(
     note: str = "",
     lang: str = "en",
 ) -> SlotResult:
-    """B / W / R subscript. Only applicable when migration == 'D', and only
-    ever set from an explicit user assertion + justification — never inferred
-    from markers, since the subscript is itself a claim about additional
-    assay evidence (parabiosis, recirculation studies, etc.).
+    """B / W / R subscript — never inferred from markers, only ever set from
+    an explicit user assertion + justification, since the subscript is
+    itself a claim about additional assay evidence (parabiosis, recirculation
+    studies, blood draw, etc.).
+
+    Which subscripts are valid depends on the migration code (not just 'D'):
+    B is valid on S, D or U; W is valid on S or D; R is valid on D only. See
+    _VALID_SUBSCRIPT_BY_MIGRATION and its paper citation above.
     """
-    if migration_code != "D":
-        if evidence:
+    if not evidence:
+        if migration_code == "D":
             rationale = (
-                f"이동 아래첨자 '{evidence}'는 무시됨: migration='D'일 때만 적용 가능 "
-                f"(계산된 migration은 '{migration_code}')."
+                "이동 아래첨자 없음: migration='D'로 확인되었지만 사용자가 명시적인 B/W/R 근거를 "
+                "제공하지 않음."
                 if lang == "ko"
                 else (
-                    f"Migration subscript '{evidence}' ignored: only applicable when "
-                    f"migration='D' (computed migration was '{migration_code}')."
+                    "No migration subscript assigned: migration='D' confirmed, but the user "
+                    "did not supply explicit B/W/R evidence."
                 )
             )
             return SlotResult(rationale=rationale)
         return SlotResult(rationale="")
-
-    if not evidence:
-        rationale = (
-            "이동 아래첨자 없음: migration='D'로 확인되었지만 사용자가 명시적인 B/W/R 근거를 "
-            "제공하지 않음."
-            if lang == "ko"
-            else (
-                "No migration subscript assigned: migration='D' confirmed, but the user "
-                "did not supply explicit B/W/R evidence."
-            )
-        )
-        return SlotResult(rationale=rationale)
 
     code = evidence.strip().upper()
     if code not in VALID_MIGRATION_SUBSCRIPTS:
         raise ValueError(
             f"Invalid migration_evidence '{evidence}'; must be one of {sorted(VALID_MIGRATION_SUBSCRIPTS)} or empty."
         )
+
+    if code not in _VALID_SUBSCRIPT_BY_MIGRATION.get(migration_code, set()):
+        allowed = sorted(_VALID_SUBSCRIPT_BY_MIGRATION.get(migration_code, set()))
+        rationale = (
+            f"이동 아래첨자 '{code}'는 무시됨: migration='{migration_code}'에는 "
+            f"{allowed if allowed else '어떤 아래첨자도'} 적용할 수 없음."
+            if lang == "ko"
+            else (
+                f"Migration subscript '{code}' ignored: not valid when migration="
+                f"'{migration_code}' (valid subscripts here: {allowed if allowed else 'none'})."
+            )
+        )
+        return SlotResult(rationale=rationale)
 
     label = _MIGRATION_SUBSCRIPT_LABELS["ko" if lang == "ko" else "en"][code]
     justification = note.strip() if note else ("(근거 메모 없음)" if lang == "ko" else "(no justification note provided)")
