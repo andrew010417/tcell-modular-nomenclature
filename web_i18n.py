@@ -85,6 +85,8 @@ UI_TEXT = {
         "hero_example_exhausted": "예시 2 불러오기 — 소진 전구체 CD8+",
         "hero_example_exhausted_desc": "→ 결과: CD8+ TDRXp+",
         "hero_example_hint": "버튼을 누르면 아래 폼에 값이 자동으로 채워지고 결과와 판정 근거가 바로 나타납니다. 각 마커 옆의 설명(마우스를 올리면 보임)을 참고해 직접 값을 바꿔보며 결과가 어떻게 달라지는지 실험해보세요.",
+        "citation": "출처: Masopust et al., “Guidelines for T cell nomenclature”, Nat Rev Immunol (2026)",
+        "btn_reset": "초기화",
         # batch page
         "batch_heading": "배치 CSV 모드",
         "batch_intro_pre": "샘플/population CSV를 업로드하면 ",
@@ -173,6 +175,8 @@ UI_TEXT = {
         "hero_example_exhausted": "Load example 2 — Exhausted progenitor CD8+",
         "hero_example_exhausted_desc": "→ result: CD8+ TDRXp+",
         "hero_example_hint": "Clicking a button fills in the form below and shows the result plus its audit trail right away. Hover a marker for what it means, then try changing values yourself to see how the result changes.",
+        "citation": "Source: Masopust et al., “Guidelines for T cell nomenclature”, Nat Rev Immunol (2026)",
+        "btn_reset": "Reset",
         "batch_heading": "Batch CSV mode",
         "batch_intro_pre": "Upload a CSV of samples/populations and get back the same file with ",
         "batch_intro_post": " columns appended. Not sure what columns to use? ",

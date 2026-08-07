@@ -268,6 +268,31 @@ button.primary {
 
 button.primary:hover { background: var(--orange-dark); }
 
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+a.secondary {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid transparent;
+}
+
+a.secondary:hover {
+  color: var(--ink);
+  border-bottom-color: var(--border);
+}
+
+.citation {
+  font-size: 0.78rem !important;
+  font-style: italic;
+  margin-top: 0.75rem !important;
+}
+
 .result-card {
   background: var(--card);
   border: 1px solid var(--border);

@@ -15,6 +15,7 @@
   <div class="hero-card-col">
     <h2>{{ t.hero_what_title }}</h2>
     <p>{{ t.hero_what_body }}</p>
+    <p class="citation">{{ t.citation }}</p>
   </div>
   <div class="hero-card-divider"></div>
   <div class="hero-card-col">
@@ -121,7 +122,10 @@
     </div>
   </fieldset>
 
-  <button type="submit" class="primary">{{ t.btn_generate }}</button>
+  <div class="form-actions">
+    <button type="submit" class="primary">{{ t.btn_generate }}</button>
+    <a href="{{ url_for('index') }}" class="secondary">{{ t.btn_reset }}</a>
+  </div>
 </form>
 
 {% if result %}
