@@ -21,6 +21,23 @@ app = Flask(__name__)
 
 LANG_COOKIE = "lang"
 
+# Prefill values for the "load a worked example" buttons — same two cases
+# documented in README.md / examples/template.csv, so a user unfamiliar with
+# T cell biology can see a real input/output pair before trying their own.
+EXAMPLE_RECORDS = {
+    "naive": {
+        "label": "example_naive", "lineage": "CD4+",
+        "CD62L": "+", "CCR7": "+", "CD45RA": "+", "CD95": "-",
+    },
+    "exhausted": {
+        "label": "example_exhausted_progenitor", "lineage": "CD8+",
+        "CD62L": "-", "PD1": "+", "TOX": "+", "TCF1": "+", "SLAMF6": "+", "TIM3": "-",
+        "migration_evidence": "R",
+        "migration_evidence_note": "Parabiosis confirms tissue residency",
+        "antigen_status": "+", "antigen_note": "Chronic LCMV infection model",
+    },
+}
+
 
 @app.context_processor
 def inject_i18n():
@@ -44,25 +61,30 @@ def index():
     result = None
     form_values = {}
 
+    example = request.args.get("example")
+    if request.method == "GET" and example in EXAMPLE_RECORDS:
+        form_values = dict(EXAMPLE_RECORDS[example])
+
     if request.method == "POST":
-        markers = {name: request.form.get(name, "NA") for group in marker_groups for name in group[1]}
         form_values = request.form.to_dict()
 
-        migration_evidence = request.form.get("migration_evidence") or None
-        differentiation_override = request.form.get("differentiation_override", "").strip() or None
+    if form_values:
+        markers = {name: form_values.get(name, "NA") for group in marker_groups for name in group[1]}
+        migration_evidence = form_values.get("migration_evidence") or None
+        differentiation_override = (form_values.get("differentiation_override") or "").strip() or None
 
         record = TCellRecord(
-            label=request.form.get("label", "").strip(),
-            location=request.form.get("location", "").strip(),
-            lineage=request.form.get("lineage", "").strip(),
-            function=request.form.get("function", "").strip(),
+            label=(form_values.get("label") or "").strip(),
+            location=(form_values.get("location") or "").strip(),
+            lineage=(form_values.get("lineage") or "").strip(),
+            function=(form_values.get("function") or "").strip(),
             markers=markers,
             migration_evidence=migration_evidence,
-            migration_evidence_note=request.form.get("migration_evidence_note", "").strip(),
+            migration_evidence_note=(form_values.get("migration_evidence_note") or "").strip(),
             differentiation_override=differentiation_override,
-            differentiation_override_note=request.form.get("differentiation_override_note", "").strip(),
-            antigen_status=request.form.get("antigen_status", "").strip(),
-            antigen_note=request.form.get("antigen_note", "").strip(),
+            differentiation_override_note=(form_values.get("differentiation_override_note") or "").strip(),
+            antigen_status=(form_values.get("antigen_status") or "").strip(),
+            antigen_note=(form_values.get("antigen_note") or "").strip(),
         )
         result = generate_nomenclature(record, lang=lang)
 

@@ -26,7 +26,7 @@ body {
 }
 
 .header-inner {
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0.75rem 1.5rem;
   display: flex;
@@ -85,13 +85,82 @@ body {
 }
 
 .page {
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
 }
 
 h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
 .subtitle { color: var(--muted); max-width: 65ch; margin-top: 0; }
+
+.hero-grid {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.hero-text { flex: 1 1 420px; }
+
+.hero-card {
+  flex: 1 1 360px;
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--orange);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+}
+
+.hero-card h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+}
+
+.hero-card p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.hero-card hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+.example-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+
+.example-btn {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--orange);
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  text-decoration: none;
+  color: var(--ink);
+  background: #fdf3ee;
+}
+
+.example-btn:hover { background: #fdece3; }
+
+.example-btn-label { font-weight: 600; font-size: 0.9rem; }
+.example-btn-desc {
+  font-family: "SF Mono", Consolas, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--orange-dark);
+}
+
+.hero-hint {
+  font-size: 0.78rem !important;
+  color: var(--muted);
+}
 
 fieldset {
   border: 1px solid var(--border);

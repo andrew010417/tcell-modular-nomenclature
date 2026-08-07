@@ -1,4 +1,31 @@
 {% extends "base.html" %}
+
+{% block hero %}
+<div class="hero-grid">
+  <div class="hero-text">
+    <h1>{{ t.heading }}</h1>
+    <p class="subtitle">{{ t.subtitle }}</p>
+  </div>
+  <aside class="hero-card">
+    <h2>{{ t.hero_what_title }}</h2>
+    <p>{{ t.hero_what_body }}</p>
+    <hr>
+    <h2>{{ t.hero_try_title }}</h2>
+    <div class="example-buttons">
+      <a class="example-btn" href="{{ url_for('index', example='naive') }}">
+        <span class="example-btn-label">{{ t.hero_example_naive }}</span>
+        <span class="example-btn-desc">{{ t.hero_example_naive_desc }}</span>
+      </a>
+      <a class="example-btn" href="{{ url_for('index', example='exhausted') }}">
+        <span class="example-btn-label">{{ t.hero_example_exhausted }}</span>
+        <span class="example-btn-desc">{{ t.hero_example_exhausted_desc }}</span>
+      </a>
+    </div>
+    <p class="hero-hint">{{ t.hero_example_hint }}</p>
+  </aside>
+</div>
+{% endblock %}
+
 {% block content %}
 
 {% if result %}

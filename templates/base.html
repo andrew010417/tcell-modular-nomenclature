@@ -26,8 +26,10 @@
     </div>
   </header>
   <main class="page">
+    {% block hero %}
     <h1>{% block heading %}{{ t.heading }}{% endblock %}</h1>
     <p class="subtitle">{{ t.subtitle }}</p>
+    {% endblock %}
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer">
