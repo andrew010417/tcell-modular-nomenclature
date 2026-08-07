@@ -4,6 +4,12 @@
 <div class="hero-text">
   <h1>{{ t.heading }}</h1>
   <p class="subtitle">{{ t.subtitle }}</p>
+  <ul class="feature-chips">
+    <li>{{ t.feature_marker }}</li>
+    <li>{{ t.feature_rationale }}</li>
+    <li>{{ t.feature_batch }}</li>
+    <li>{{ t.feature_i18n }}</li>
+  </ul>
 </div>
 <aside class="hero-card">
   <div class="hero-card-col">
@@ -14,11 +20,11 @@
   <div class="hero-card-col">
     <h2>{{ t.hero_try_title }}</h2>
     <div class="example-buttons">
-      <a class="example-btn" href="{{ url_for('index', example='naive') }}">
+      <a class="example-btn" href="{{ url_for('index', example='naive') }}#result">
         <span class="example-btn-label">{{ t.hero_example_naive }}</span>
         <span class="example-btn-desc">{{ t.hero_example_naive_desc }}</span>
       </a>
-      <a class="example-btn" href="{{ url_for('index', example='exhausted') }}">
+      <a class="example-btn" href="{{ url_for('index', example='exhausted') }}#result">
         <span class="example-btn-label">{{ t.hero_example_exhausted }}</span>
         <span class="example-btn-desc">{{ t.hero_example_exhausted_desc }}</span>
       </a>
@@ -30,28 +36,7 @@
 
 {% block content %}
 
-{% if result %}
-<section class="result-card">
-  <div class="result-name">{{ result.nomenclature }}</div>
-  <div class="result-grid">
-    <div><span class="label">{{ t.result_lineage }}</span><span>{{ result.lineage or t.result_not_given }}</span></div>
-    <div><span class="label">{{ t.result_function }}</span><span>{{ result.function or t.result_not_given }}</span></div>
-    <div><span class="label">{{ t.result_migration }}</span><span>{{ result.migration or t.result_not_given }}{{ (" " ~ result.migration_subscript) if result.migration_subscript }}</span></div>
-    <div><span class="label">{{ t.result_differentiation }}</span><span>{{ result.differentiation or t.result_not_assigned }}{{ result.differentiation_subscript }}</span></div>
-    <div><span class="label">{{ t.result_antigen }}</span><span>{{ result.antigen or t.result_not_asserted }}</span></div>
-  </div>
-  <details class="rationale" open>
-    <summary>{{ t.rationale_summary }}</summary>
-    <ul>
-      {% for line in result.rationale.split("\n") %}
-      <li>{{ line[2:] if line.startswith("- ") else line }}</li>
-      {% endfor %}
-    </ul>
-  </details>
-</section>
-{% endif %}
-
-<form method="post" class="record-form">
+<form method="post" action="{{ url_for('index') }}#result" class="record-form">
   <fieldset>
     <legend>{{ t.section_identity }}</legend>
     <div class="field-row">
@@ -138,4 +123,25 @@
 
   <button type="submit" class="primary">{{ t.btn_generate }}</button>
 </form>
+
+{% if result %}
+<section class="result-card" id="result">
+  <div class="result-name">{{ result.nomenclature }}</div>
+  <div class="result-grid">
+    <div><span class="label">{{ t.result_lineage }}</span><span>{{ result.lineage or t.result_not_given }}</span></div>
+    <div><span class="label">{{ t.result_function }}</span><span>{{ result.function or t.result_not_given }}</span></div>
+    <div><span class="label">{{ t.result_migration }}</span><span>{{ result.migration or t.result_not_given }}{{ (" " ~ result.migration_subscript) if result.migration_subscript }}</span></div>
+    <div><span class="label">{{ t.result_differentiation }}</span><span>{{ result.differentiation or t.result_not_assigned }}{{ result.differentiation_subscript }}</span></div>
+    <div><span class="label">{{ t.result_antigen }}</span><span>{{ result.antigen or t.result_not_asserted }}</span></div>
+  </div>
+  <details class="rationale" open>
+    <summary>{{ t.rationale_summary }}</summary>
+    <ul>
+      {% for line in result.rationale.split("\n") %}
+      <li>{{ line[2:] if line.startswith("- ") else line }}</li>
+      {% endfor %}
+    </ul>
+  </details>
+</section>
+{% endif %}
 {% endblock %}

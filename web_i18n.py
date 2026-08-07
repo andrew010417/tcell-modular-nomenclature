@@ -26,6 +26,10 @@ UI_TEXT = {
             "Choi Lab · Masopust et al., \"Guidelines for T cell nomenclature\", "
             "Nat Rev Immunol (2026) 기반"
         ),
+        "feature_marker": "🔬 13개 마커 기반 자동 판정",
+        "feature_rationale": "📝 슬롯별 판정 근거 항상 표시",
+        "feature_batch": "📄 단일 입력 + 배치 CSV 지원",
+        "feature_i18n": "🌐 한국어 / English 지원",
         # single-record form
         "section_identity": "Population 식별 정보",
         "label_label": "샘플 / population 라벨",
@@ -111,6 +115,10 @@ UI_TEXT = {
             "Choi Lab · based on Masopust et al., \"Guidelines for T cell nomenclature\", "
             "Nat Rev Immunol (2026)"
         ),
+        "feature_marker": "🔬 Auto-classifies from 13 markers",
+        "feature_rationale": "📝 Rationale always shown per slot",
+        "feature_batch": "📄 Single entry + batch CSV",
+        "feature_i18n": "🌐 Korean / English",
         "section_identity": "Population identity",
         "label_label": "Sample / population label",
         "label_location": "Tissue / location",

@@ -91,9 +91,28 @@ body {
 }
 
 h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
-.subtitle { color: var(--muted); max-width: 65ch; margin-top: 0; }
+.subtitle { color: var(--muted); max-width: 90ch; margin-top: 0; }
 
 .hero-text { margin-bottom: 1.5rem; }
+
+.feature-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.feature-chips li {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+  color: var(--ink);
+  white-space: nowrap;
+}
 
 .hero-card {
   display: flex;
@@ -255,7 +274,8 @@ button.primary:hover { background: var(--orange-dark); }
   border-left: 5px solid var(--orange);
   border-radius: 10px;
   padding: 1.25rem 1.5rem;
-  margin-bottom: 2rem;
+  margin-top: 2rem;
+  scroll-margin-top: 1.5rem;
 }
 
 .result-name {
