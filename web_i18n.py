@@ -14,58 +14,70 @@ SUPPORTED_LANGS = ("ko", "en")
 UI_TEXT = {
     "ko": {
         "site_title": "T세포 모듈형 명명법 생성기",
-        "nav_single": "단일 population",
-        "nav_batch": "배치 CSV",
+        "nav_single": "단일 샘플 입력",
+        "nav_batch": "CSV 일괄 처리",
         "heading": "T세포 모듈형 명명법 생성기",
         "subtitle": (
-            "독립적으로 근거가 확인된 슬롯들로부터 이름을 조합합니다 — Lineage · Function · "
-            "Migration · Differentiation state · Antigen status. 마커 근거가 없는 슬롯은 "
-            "추측하지 않고 비워 둡니다."
+            "Lineage · Function · Migration · Differentiation state · Antigen status, "
+            "이렇게 근거가 확인된 항목만 조합해서 이름을 만듭니다. "
+            "마커 근거가 없는 항목은 추측하지 않고 그냥 비워 둡니다."
         ),
         "footer": (
-            "Choi Lab · Masopust et al., \"Guidelines for T cell nomenclature\", "
-            "Nat Rev Immunol (2026) 기반"
+            "Choi Lab · Masopust 등, \"Guidelines for T cell nomenclature\", "
+            "Nat Rev Immunol (2026) 기준"
         ),
-        "feature_marker": "🔬 13개 마커 기반 자동 판정",
-        "feature_rationale": "📝 슬롯별 판정 근거 항상 표시",
-        "feature_batch": "📄 단일 입력 + 배치 CSV 지원",
+        "feature_marker": "🔬 13개 마커로 자동 판정",
+        "feature_rationale": "📝 판정 근거를 항목별로 항상 표시",
+        "feature_batch": "📄 단일 입력 + CSV 일괄 처리",
         "feature_i18n": "🌐 한국어 / English 지원",
         # single-record form
-        "section_identity": "Population 식별 정보",
-        "label_label": "샘플 / population 라벨",
+        "section_identity": "샘플 기본 정보",
+        "label_label": "샘플 이름",
         "label_location": "조직 / 위치",
         "label_lineage": "Lineage",
         "label_function": "Function",
-        "placeholder_optional": "선택 사항",
+        "placeholder_optional": "선택 입력",
         "placeholder_location": "예: Liver",
         "placeholder_lineage": "예: CD8+",
         "placeholder_function": "예: TH1",
         "marker_choice_pos": "+",
         "marker_choice_neg": "-",
         "marker_choice_na": "측정 안 됨",
-        "section_migration_override": "이동 상태 직접 지정 (선택)",
-        "note_migration_override": "마커 근거(아래)가 S 또는 D를 확정하기에 부족하면 이 슬롯은 기본적으로 비워둡니다 — 논문에 따르면 migration은 선택 항목이며, 근거가 없다고 해서 'U'를 강제로 채우지 않습니다. 'U'(또는 마커와 다른 S/D)를 명시적으로 주장하고 싶을 때만 여기서 지정하세요.",
-        "label_migration_override_code": "이동 코드",
-        "option_migration_none": "(직접 지정 안 함 — 마커 근거만 사용)",
+        "section_migration_override": "Migration 상태 직접 지정 (선택)",
+        "note_migration_override": (
+            "아래 마커만으로 S 또는 D를 확정하기 어려우면 이 항목은 기본적으로 비워 둡니다. "
+            "논문에서도 migration을 선택 항목으로 다루기 때문에, 근거가 부족하다고 해서 "
+            "'U'를 자동으로 채우지는 않습니다. 'U'라고 명시하고 싶거나 마커 판정과 다른 "
+            "S/D를 직접 주장하고 싶을 때만 여기서 지정해 주세요."
+        ),
+        "label_migration_override_code": "Migration 코드",
+        "option_migration_none": "(직접 지정하지 않음 — 마커 판정 결과만 사용)",
         "option_migration_s": "S — 2차 림프 기관 진입 가능",
         "option_migration_d": "D — 파종성",
-        "option_migration_u": "U — 이동 상태 불명 (명시적 주장)",
-        "section_migration_sub": "이동 아래첨자",
-        "note_migration_sub": "마커로부터 추론되지 않습니다 — 추가 분석적 근거가 명확히 있을 때만 지정하세요. 어떤 조합이 유효한지는 위 Migration 판정 결과에 따라 다릅니다: B는 S/D/U 모두에, W는 S/D에, R은 D에만 적용됩니다.",
+        "option_migration_u": "U — 이동 상태 불명 (명시적으로 주장)",
+        "section_migration_sub": "Migration 아래첨자",
+        "note_migration_sub": (
+            "마커만으로는 판단할 수 없는 항목입니다. 추가로 확인된 분석적 근거가 있을 때만 "
+            "지정해 주세요. 어떤 조합이 가능한지는 위 Migration 판정 결과에 따라 달라집니다 — "
+            "B는 S/D/U 어디에나, W는 S/D에만, R은 D에만 붙일 수 있습니다."
+        ),
         "label_evidence_code": "근거 코드",
         "option_none": "(없음)",
-        "option_b": "B — 혈액에서만 확인",
+        "option_b": "B — 혈액에서만 확인됨",
         "option_w": "W — 광범위 재순환 확인됨",
         "option_r": "R — 조직 상주성 확인됨",
-        "label_justification": "근거 / 정당화",
-        "placeholder_migration_note": "예: Parabiosis로 조직 상주성 확인",
-        "section_diff_override": "Differentiation 재정의",
-        "note_diff_override": "Anergic(G)은 기능적으로 정의되며 마커로 읽을 수 없습니다 — 해당하는 경우 근거와 함께 여기서 지정하세요.",
-        "label_override_code": "재정의 코드",
+        "label_justification": "근거 설명",
+        "placeholder_migration_note": "예: parabiosis로 조직 상주성 확인",
+        "section_diff_override": "Differentiation 상태 직접 지정 (선택)",
+        "note_diff_override": (
+            "Anergic(G)은 기능적으로 정의되는 상태라 마커만으로는 판단할 수 없습니다. "
+            "해당된다고 판단되면 근거와 함께 여기서 직접 지정해 주세요."
+        ),
+        "label_override_code": "지정할 코드",
         "placeholder_override_code": "예: G",
-        "section_antigen": "항원(Antigen) 상태",
-        "note_antigen": "마커로부터 추론되지 않습니다 — 실험 설계에 따라 직접 판단해 입력하세요.",
-        "antigen_not_asserted": "주장하지 않음",
+        "section_antigen": "Antigen 상태",
+        "note_antigen": "마커만으로는 알 수 없는 항목입니다. 실험 설계를 바탕으로 직접 판단해서 입력해 주세요.",
+        "antigen_not_asserted": "주장 안 함",
         "antigen_persistent": "+ 지속",
         "antigen_cleared": "0 소실",
         "placeholder_antigen_note": "예: 만성 LCMV 감염 모델",
@@ -76,37 +88,45 @@ UI_TEXT = {
         "result_differentiation": "Differentiation",
         "result_antigen": "Antigen 상태",
         "result_not_given": "(입력 없음)",
-        "result_not_assigned": "(할당되지 않음)",
-        "result_not_asserted": "(주장되지 않음)",
-        "rationale_summary": "왜 이렇게 나왔나 (감사 추적 — 신뢰하기 전에 확인하세요)",
+        "result_not_assigned": "(판정 안 됨)",
+        "result_not_asserted": "(주장 안 됨)",
+        "rationale_summary": "이렇게 판정된 이유 (결과를 그대로 믿지 말고 확인해 보세요)",
         # hero "quick start" card (index page)
         "hero_what_title": "이 도구는 무엇을 하나요?",
         "hero_what_body": (
-            "유세포분석(flow cytometry) 마커의 +/-/미측정 값을 입력하면, 근거가 있는 슬롯만 "
-            "채워서 T세포 이름을 조합해줍니다. 마커가 없으면 추측하지 않고 비워 둡니다 — "
-            "그래서 아래 감사 추적에서 '왜 이렇게 판정됐는지'를 항상 확인할 수 있습니다."
+            "유세포분석(flow cytometry) 마커 값을 +, -, 미측정 중 하나로 입력하면, "
+            "근거가 확인된 항목만 채워서 T세포 이름을 만들어 줍니다. 근거가 없는 항목은 "
+            "추측하지 않고 비워 두기 때문에, 아래에서 '왜 이렇게 판정됐는지'를 항상 직접 "
+            "확인하실 수 있습니다."
         ),
-        "hero_try_title": "T세포 마커를 잘 모르신다면? 예시로 먼저 체험해보세요",
+        "hero_try_title": "T세포 마커를 잘 모르신다면? 예시로 먼저 체험해 보세요",
         "hero_example_naive": "예시 1 불러오기 — Naive CD4+",
         "hero_example_naive_desc": "→ 결과: CD4+ TSN",
         "hero_example_exhausted": "예시 2 불러오기 — 소진 전구체 CD8+",
         "hero_example_exhausted_desc": "→ 결과: CD8+ TDRXp+",
-        "hero_example_hint": "버튼을 누르면 아래 폼에 값이 자동으로 채워지고 결과와 판정 근거가 바로 나타납니다. 각 마커 옆의 설명(마우스를 올리면 보임)을 참고해 직접 값을 바꿔보며 결과가 어떻게 달라지는지 실험해보세요.",
-        "citation": "출처: Masopust et al., “Guidelines for T cell nomenclature”, Nat Rev Immunol (2026)",
+        "hero_example_hint": (
+            "버튼을 누르면 아래 폼에 값이 자동으로 채워지고 결과와 판정 근거가 바로 나타납니다. "
+            "마커 이름에 마우스를 올리면 설명이 뜨니 참고해서, 값을 직접 바꿔가며 결과가 어떻게 "
+            "달라지는지 실험해 보세요."
+        ),
+        "citation": "출처: Masopust 등, “Guidelines for T cell nomenclature”, Nat Rev Immunol (2026)",
         "btn_reset": "초기화",
         # batch page
-        "batch_heading": "배치 CSV 모드",
-        "batch_intro_pre": "샘플/population CSV를 업로드하면 ",
-        "batch_intro_post": " 컬럼이 추가된 동일한 파일을 받을 수 있습니다. 어떤 컬럼을 써야 할지 모르시겠다면, 먼저 ",
+        "batch_heading": "CSV 일괄 처리",
+        "batch_intro_pre": "샘플 목록이 담긴 CSV를 업로드하면 ",
+        "batch_intro_post": " 컬럼이 추가된 파일을 받을 수 있습니다. 어떤 컬럼을 써야 할지 모르겠다면 먼저 ",
         "batch_template_link": "템플릿을 다운로드",
-        "batch_template_suffix": "해서 예상 형식과 두 가지 예시를 확인해보세요.",
+        "batch_template_suffix": "해서 형식과 예시 2개를 먼저 확인해 보세요.",
         "batch_choose_file": "CSV 파일 선택…",
         "batch_submit": "처리 후 다운로드",
-        "batch_columns_summary": "컬럼 참고",
-        "batch_columns_intro": "모든 컬럼은 선택 사항입니다 (대소문자, 공백/밑줄/하이픈 무시하고 매칭). 없는 마커 컬럼은 모든 행에서 '측정 안 됨'으로 처리됩니다.",
+        "batch_columns_summary": "컬럼 설명",
+        "batch_columns_intro": (
+            "모든 컬럼은 선택 사항입니다 (대소문자나 공백·밑줄·하이픈 차이는 무시하고 인식합니다). "
+            "마커 컬럼이 없으면 모든 행에서 '측정 안 됨'으로 처리됩니다."
+        ),
         "batch_columns_markers": "마커 컬럼:",
         "batch_columns_meta": "메타데이터 컬럼:",
-        "batch_no_file": "업로드할 CSV 파일을 선택해주세요.",
+        "batch_no_file": "업로드할 CSV 파일을 선택해 주세요.",
         "lang_toggle_ko": "한국어",
         "lang_toggle_en": "English",
     },

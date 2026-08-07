@@ -74,18 +74,18 @@ MARKER_DESCRIPTIONS_KO = {
     "SLAMF6": "전구체 소진 세포와 관련된 표면 마커입니다.",
     "TIM3": "말단 소진 세포와 관련된 표면 마커입니다.",
     "CD101": "말단 소진 세포와 관련된 표면 마커입니다.",
-    "KLRG1": "단명 말단 이펙터(short-lived terminal effector) 세포를 나타내는 killer cell lectin-like receptor입니다.",
-    "CD127": "IL-7 수용체 알파. 단명 이펙터에서는 소실되고, memory-precursor/줄기세포 유사 세포에서는 유지됩니다.",
-    "CD27": "memory-precursor 및 줄기세포 유사 memory 세포에서 유지되는 공동자극 수용체입니다.",
+    "KLRG1": "단명 말단 이펙터 세포에서 발현되는 killer cell lectin-like receptor입니다.",
+    "CD127": "IL-7 수용체 알파 사슬. 단명 이펙터 세포에서는 소실되고, memory-precursor·줄기세포 유사 세포에서는 유지됩니다.",
+    "CD27": "memory-precursor 세포와 줄기세포 유사 memory 세포에서 유지되는 공동자극 수용체입니다.",
 }
 
 MARKER_GROUPS_KO = [
-    ("이동 (CD62L / CCR7)", ["CD62L", "CCR7"], "S(림프절 진입 가능) vs D(파종성)를 결정합니다."),
-    ("Naive vs. Memory (CD45RA / CD45RO / CD95)", ["CD45RA", "CD45RO", "CD95"], "Naive(N) 판정을 결정합니다."),
-    ("최근 활성화 (CD69 / CD25)", ["CD69", "CD25"], "아래 PD1/TOX와 함께 Activated(A) 판정을 결정합니다."),
-    ("만성 자극 / 소진 (PD1 / TOX)", ["PD1", "TOX"], "PD1+ 와 TOX+ 가 함께 Exhausted(X) 판정을 결정합니다."),
-    ("소진 하위유형 (TCF1 / SLAMF6 / TIM3 / CD101)", ["TCF1", "SLAMF6", "TIM3", "CD101"], "위에서 X로 판정된 경우에만 관련 있음 — progenitor(p) 또는 terminal(t)로 세분화합니다."),
-    ("활성화/메모리 하위유형 (KLRG1 / CD127 / CD27)", ["KLRG1", "CD127", "CD27"], "Activated를 progenitor(Ap)/terminal(At)로, Memory를 줄기세포 유사 progenitor(Mp)로 세분화합니다."),
+    ("이동 (CD62L / CCR7)", ["CD62L", "CCR7"], "S(림프절 진입 가능)와 D(파종성)를 구분합니다."),
+    ("Naive · Memory 구분 (CD45RA / CD45RO / CD95)", ["CD45RA", "CD45RO", "CD95"], "Naive(N) 판정에 사용됩니다."),
+    ("최근 활성화 (CD69 / CD25)", ["CD69", "CD25"], "아래 PD1/TOX와 함께 Activated(A) 판정에 사용됩니다."),
+    ("만성 자극 / 소진 (PD1 / TOX)", ["PD1", "TOX"], "PD1+이면서 TOX+이면 Exhausted(X)로 판정됩니다."),
+    ("소진 하위유형 (TCF1 / SLAMF6 / TIM3 / CD101)", ["TCF1", "SLAMF6", "TIM3", "CD101"], "위에서 X로 판정된 경우에만 의미가 있으며, progenitor(p)와 terminal(t)로 세분화합니다."),
+    ("활성화/메모리 하위유형 (KLRG1 / CD127 / CD27)", ["KLRG1", "CD127", "CD27"], "Activated를 progenitor(Ap)·terminal(At)로, Memory를 줄기세포 유사 progenitor(Mp)로 세분화합니다."),
 ]
 
 MARKER_DESCRIPTIONS_I18N = {"en": MARKER_DESCRIPTIONS, "ko": MARKER_DESCRIPTIONS_KO}

@@ -71,7 +71,7 @@ def classify_migration(
             raise ValueError(f"Invalid migration_override '{override}'; must be one of {sorted(VALID_MIGRATION_CODES)} or empty.")
         justification = override_note.strip() if override_note else ("(근거 메모 없음)" if lang == "ko" else "(no justification note provided)")
         rationale = (
-            f"{code}: 사용자가 이동 상태를 직접 지정함. 근거: {justification}"
+            f"{code}: 사용자가 직접 지정한 이동 상태입니다. 근거: {justification}"
             if lang == "ko"
             else f"{code}: user-asserted migration claim. Justification: {justification}"
         )
@@ -98,8 +98,8 @@ def classify_migration(
         return SlotResult(code="D", rationale=rationale)
 
     rationale = (
-        f"이동 슬롯 비워둠: S 또는 D를 확정할 근거 부족 (CD62L={cd62l}, CCR7={ccr7}). "
-        "논문 기준 migration은 선택 항목이며, 'U'로 명시하고 싶다면 이동 상태를 직접 지정하세요."
+        f"Migration 항목을 비워 둡니다: S 또는 D를 확정할 근거가 부족합니다 (CD62L={cd62l}, CCR7={ccr7}). "
+        "논문에서도 migration은 선택 항목으로 다루므로, 'U'라고 명시하고 싶다면 이동 상태를 직접 지정해 주세요."
         if lang == "ko"
         else (
             f"Migration left blank: insufficient evidence to confirm S or D (CD62L={cd62l}, CCR7={ccr7}). "
@@ -127,8 +127,8 @@ def classify_migration_subscript(
     if not evidence:
         if migration_code == "D":
             rationale = (
-                "이동 아래첨자 없음: migration='D'로 확인되었지만 사용자가 명시적인 B/W/R 근거를 "
-                "제공하지 않음."
+                "migration='D'로 확인되었지만, B/W/R 근거를 사용자가 별도로 제공하지 않아 "
+                "이동 아래첨자는 지정하지 않았습니다."
                 if lang == "ko"
                 else (
                     "No migration subscript assigned: migration='D' confirmed, but the user "
@@ -147,8 +147,8 @@ def classify_migration_subscript(
     if code not in _VALID_SUBSCRIPT_BY_MIGRATION.get(migration_code, set()):
         allowed = sorted(_VALID_SUBSCRIPT_BY_MIGRATION.get(migration_code, set()))
         rationale = (
-            f"이동 아래첨자 '{code}'는 무시됨: migration='{migration_code}'에는 "
-            f"{allowed if allowed else '어떤 아래첨자도'} 적용할 수 없음."
+            f"이동 아래첨자 '{code}'는 적용하지 않습니다: migration='{migration_code}'에는 "
+            + (f"{', '.join(allowed)}만 붙일 수 있습니다." if allowed else "어떤 아래첨자도 붙일 수 없습니다.")
             if lang == "ko"
             else (
                 f"Migration subscript '{code}' ignored: not valid when migration="
@@ -260,7 +260,7 @@ def classify_differentiation(
         code = override.strip().upper()
         justification = override_note.strip() if override_note else ("(제공되지 않음)" if lang == "ko" else "(none provided)")
         rationale = (
-            f"사용자 재정의: differentiation을 '{code}'로 수동 설정함. 근거: {justification}"
+            f"사용자가 differentiation을 '{code}'로 직접 지정했습니다. 근거: {justification}"
             if lang == "ko"
             else f"User override: differentiation manually set to '{code}'. Justification: {justification}"
         )
@@ -373,7 +373,7 @@ def classify_antigen(status: str, note: str = "", lang: str = "en") -> SlotResul
 
     if status == "":
         rationale = (
-            "항원(antigen) 상태는 사용자에 의해 주장되지 않음 (별도 주장 없음)."
+            "Antigen 상태는 사용자가 별도로 주장하지 않았습니다."
             if lang == "ko"
             else "Antigen status not asserted by user (no claim made)."
         )
