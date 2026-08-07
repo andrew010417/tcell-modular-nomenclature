@@ -180,6 +180,36 @@ threshold/binarization step before reuse of this logic — noted as a TODO in
 mapping to every named subset in the paper's Tables 1-6 (TCM, TEM, TPEX,
 ...) is out of scope; this program implements the core marker rules only.
 
+## Web UI
+
+A Flask front end (`app.py`) wraps the same `nomenclature` package used by
+the CLI — no naming logic is duplicated. Run it locally:
+
+```
+pip install -r requirements.txt
+python app.py
+```
+
+Then open http://localhost:5000. It has two pages:
+
+- **Single population** (`/`) — a form version of interactive mode: fill in
+  markers, get the nomenclature string plus the slot-by-slot breakdown and
+  audit trail.
+- **Batch CSV** (`/batch`) — upload a CSV (e.g. `examples/template.csv`),
+  get back the same file with `nomenclature`/`migration`/`differentiation`/
+  `antigen`/`rationale` columns appended.
+
+### Deploying to Railway
+
+The repo already has what Railway's Nixpacks builder needs — `requirements.txt`
+and a `Procfile` (`web: gunicorn app:app --bind 0.0.0.0:$PORT`). From the
+[Railway dashboard](https://railway.app): New Project → Deploy from GitHub repo
+→ pick this repo. Railway sets `$PORT` automatically; no other environment
+variables are required.
+
+To use a different logo, replace `static/logo.png` (falls back to a plain
+"CHOI LAB" text mark if the file is missing).
+
 ## Tests
 
 ```

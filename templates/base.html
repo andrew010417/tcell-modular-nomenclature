@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}T cell nomenclature generator{% endblock %} — Choi Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="{{ url_for('index') }}" class="brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Choi Lab" class="brand-logo"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+        <span class="brand-text" style="display:none;">CHOI LAB</span>
+      </a>
+      <nav>
+        <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' }}">Single population</a>
+        <a href="{{ url_for('batch') }}" class="{{ 'active' if request.endpoint == 'batch' }}">Batch CSV</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page">
+    <h1>{% block heading %}T cell modular nomenclature generator{% endblock %}</h1>
+    <p class="subtitle">
+      Composes a name from independently-evidenced slots — Lineage · Function · Migration ·
+      Differentiation state · Antigen status. A slot with no supporting marker data is left
+      blank, never guessed.
+    </p>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <span>Choi Lab &middot; based on Masopust et al., "Guidelines for T cell nomenclature", <em>Nat Rev Immunol</em> (2026)</span>
+  </footer>
+</body>
+</html>
