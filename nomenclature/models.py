@@ -52,6 +52,36 @@ MARKER_GROUPS = [
     ("Exhaustion subtype (TCF1 / SLAMF6 / TIM3 / CD101)", ["TCF1", "SLAMF6", "TIM3", "CD101"], "Only relevant if X was called above — splits it into progenitor (p) or terminal (t)."),
 ]
 
+# Korean translations of the display-only text above (marker descriptions,
+# group titles/notes). Purely presentational — used by the web UI; the
+# classification logic in slots.py is keyed on MARKER_NAMES, not on these.
+MARKER_DESCRIPTIONS_KO = {
+    "CD62L": "L-셀렉틴. HEV를 통해 림프절로 진입하는 데 필요합니다.",
+    "CCR7": "림프절로의 귀소(homing)를 유도하는 케모카인 수용체입니다.",
+    "CD45RA": "naive T세포(및 일부 최종분화 T세포)에서 흔히 나타나는 이소형입니다.",
+    "CD45RO": "memory T세포에서 흔히 나타나는 이소형입니다.",
+    "CD95": "Fas. 진성 naive 세포와 줄기세포 유사 memory 세포를 구분합니다.",
+    "CD69": "최근 TCR/사이토카인 활성화의 초기 마커입니다.",
+    "CD25": "IL-2 수용체 알파 사슬로, 최근 활성화에 의해 유도됩니다.",
+    "PD1": "만성 항원 자극에 의해 유도되는 억제성 수용체입니다.",
+    "TOX": "소진(exhaustion) 프로그램을 유도하는 전사인자입니다.",
+    "TCF1": "줄기세포 유사/전구체 소진 세포를 유지시키는 전사인자입니다.",
+    "SLAMF6": "전구체 소진 세포와 관련된 표면 마커입니다.",
+    "TIM3": "말단 소진 세포와 관련된 표면 마커입니다.",
+    "CD101": "말단 소진 세포와 관련된 표면 마커입니다.",
+}
+
+MARKER_GROUPS_KO = [
+    ("이동 (CD62L / CCR7)", ["CD62L", "CCR7"], "S(림프절 진입 가능) vs D(파종성)를 결정합니다."),
+    ("Naive vs. Memory (CD45RA / CD45RO / CD95)", ["CD45RA", "CD45RO", "CD95"], "Naive(N) 판정을 결정합니다."),
+    ("최근 활성화 (CD69 / CD25)", ["CD69", "CD25"], "아래 PD1/TOX와 함께 Activated(A) 판정을 결정합니다."),
+    ("만성 자극 / 소진 (PD1 / TOX)", ["PD1", "TOX"], "PD1+ 와 TOX+ 가 함께 Exhausted(X) 판정을 결정합니다."),
+    ("소진 하위유형 (TCF1 / SLAMF6 / TIM3 / CD101)", ["TCF1", "SLAMF6", "TIM3", "CD101"], "위에서 X로 판정된 경우에만 관련 있음 — progenitor(p) 또는 terminal(t)로 세분화합니다."),
+]
+
+MARKER_DESCRIPTIONS_I18N = {"en": MARKER_DESCRIPTIONS, "ko": MARKER_DESCRIPTIONS_KO}
+MARKER_GROUPS_I18N = {"en": MARKER_GROUPS, "ko": MARKER_GROUPS_KO}
+
 _POS = {"+", "POS", "POSITIVE", "TRUE", "1"}
 _NEG = {"-", "NEG", "NEGATIVE", "FALSE", "0"}
 _NA = {"NA", "N/A", "", "UNKNOWN", "U", "NONE", "NOT MEASURED", "NOTMEASURED"}

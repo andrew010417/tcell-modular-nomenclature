@@ -74,7 +74,7 @@ def _row_to_record(row: Dict[str, str], header_map: Dict[str, str]) -> TCellReco
     )
 
 
-def process_csv(input_path: str, output_path: str) -> int:
+def process_csv(input_path: str, output_path: str, lang: str = "en") -> int:
     """Read `input_path`, append nomenclature columns, write to `output_path`.
 
     Returns the number of rows processed.
@@ -108,7 +108,7 @@ def process_csv(input_path: str, output_path: str) -> int:
         writer.writeheader()
         for row in rows:
             record = _row_to_record(row, header_map)
-            result = generate_nomenclature(record)
+            result = generate_nomenclature(record, lang=lang)
             out_row = dict(row)
             out_row["nomenclature"] = result.nomenclature
             out_row["migration"] = result.migration

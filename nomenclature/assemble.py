@@ -23,15 +23,15 @@ from .slots import (
 )
 
 
-def generate_nomenclature(record: TCellRecord) -> NomenclatureResult:
-    migration = classify_migration(record.markers)
+def generate_nomenclature(record: TCellRecord, lang: str = "en") -> NomenclatureResult:
+    migration = classify_migration(record.markers, lang=lang)
     migration_sub = classify_migration_subscript(
-        migration.code, record.migration_evidence, record.migration_evidence_note
+        migration.code, record.migration_evidence, record.migration_evidence_note, lang=lang
     )
     differentiation = classify_differentiation(
-        record.markers, record.differentiation_override, record.differentiation_override_note
+        record.markers, record.differentiation_override, record.differentiation_override_note, lang=lang
     )
-    antigen = classify_antigen(record.antigen_status, record.antigen_note)
+    antigen = classify_antigen(record.antigen_status, record.antigen_note, lang=lang)
 
     lineage = (record.lineage or "").strip()
     function = (record.function or "").strip()
@@ -43,12 +43,20 @@ def generate_nomenclature(record: TCellRecord) -> NomenclatureResult:
     parts.append(core)
     nomenclature = " ".join(parts)
 
-    rationale_lines = [
-        f"- Migration: {migration.rationale}",
-        f"- Migration subscript: {migration_sub.rationale}" if migration_sub.rationale else None,
-        f"- Differentiation: {differentiation.rationale}",
-        f"- Antigen status: {antigen.rationale}",
-    ]
+    if lang == "ko":
+        rationale_lines = [
+            f"- 이동(Migration): {migration.rationale}",
+            f"- 이동 아래첨자: {migration_sub.rationale}" if migration_sub.rationale else None,
+            f"- 분화 상태(Differentiation): {differentiation.rationale}",
+            f"- 항원 상태(Antigen): {antigen.rationale}",
+        ]
+    else:
+        rationale_lines = [
+            f"- Migration: {migration.rationale}",
+            f"- Migration subscript: {migration_sub.rationale}" if migration_sub.rationale else None,
+            f"- Differentiation: {differentiation.rationale}",
+            f"- Antigen status: {antigen.rationale}",
+        ]
     rationale = "\n".join(line for line in rationale_lines if line)
 
     return NomenclatureResult(

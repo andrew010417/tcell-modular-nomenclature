@@ -1,12 +1,9 @@
 {% extends "base.html" %}
-{% block heading %}Batch CSV mode{% endblock %}
+{% block heading %}{{ t.batch_heading }}{% endblock %}
 {% block content %}
 <p>
-  Upload a CSV of samples/populations and get back the same file with
-  <code>nomenclature</code>, <code>migration</code>, <code>differentiation</code>,
-  <code>antigen</code>, and <code>rationale</code> columns appended.
-  Not sure what columns to use? <a href="{{ url_for('template_csv') }}">Download the template</a>
-  first to see the expected layout and two worked examples.
+  {{ t.batch_intro_pre }}<code>nomenclature</code>, <code>migration</code>, <code>differentiation</code>,
+  <code>antigen</code>, <code>rationale</code>{{ t.batch_intro_post }}<a href="{{ url_for('template_csv') }}">{{ t.batch_template_link }}</a>{{ t.batch_template_suffix }}
 </p>
 
 {% if error %}
@@ -16,17 +13,17 @@
 <form method="post" enctype="multipart/form-data" class="upload-form">
   <label class="file-drop">
     <input type="file" name="csv_file" accept=".csv" required>
-    <span>Choose a CSV file&hellip;</span>
+    <span>{{ t.batch_choose_file }}</span>
   </label>
-  <button type="submit" class="primary">Process &amp; download</button>
+  <button type="submit" class="primary">{{ t.batch_submit }}</button>
 </form>
 
 <details class="rationale">
-  <summary>Column reference</summary>
-  <p>All columns are optional (matched case-insensitively, ignoring spaces/underscores/hyphens). Missing marker columns are treated as not-measured for every row.</p>
+  <summary>{{ t.batch_columns_summary }}</summary>
+  <p>{{ t.batch_columns_intro }}</p>
   <ul>
-    <li><strong>Marker columns:</strong> CD62L, CCR7, CD45RA, CD45RO, CD95, CD69, CD25, PD1, TOX, TCF1, SLAMF6, TIM3, CD101 &mdash; values <code>+</code> / <code>-</code> / blank</li>
-    <li><strong>Metadata columns:</strong> label, location, lineage, function, migration_evidence (B/W/R), migration_evidence_note, differentiation_override, differentiation_override_note, antigen_status (+/0/blank), antigen_note</li>
+    <li><strong>{{ t.batch_columns_markers }}</strong> CD62L, CCR7, CD45RA, CD45RO, CD95, CD69, CD25, PD1, TOX, TCF1, SLAMF6, TIM3, CD101 &mdash; <code>+</code> / <code>-</code> / blank</li>
+    <li><strong>{{ t.batch_columns_meta }}</strong> label, location, lineage, function, migration_evidence (B/W/R), migration_evidence_note, differentiation_override, differentiation_override_note, antigen_status (+/0/blank), antigen_note</li>
   </ul>
 </details>
 {% endblock %}

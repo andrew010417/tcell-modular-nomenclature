@@ -5,14 +5,14 @@
 <section class="result-card">
   <div class="result-name">{{ result.nomenclature }}</div>
   <div class="result-grid">
-    <div><span class="label">Lineage</span><span>{{ result.lineage or "(not given)" }}</span></div>
-    <div><span class="label">Function</span><span>{{ result.function or "(not given)" }}</span></div>
-    <div><span class="label">Migration</span><span>{{ result.migration or "(not given)" }}{{ (" " ~ result.migration_subscript) if result.migration_subscript }}</span></div>
-    <div><span class="label">Differentiation</span><span>{{ result.differentiation or "(not assigned)" }}{{ result.differentiation_subscript }}</span></div>
-    <div><span class="label">Antigen status</span><span>{{ result.antigen or "(not asserted)" }}</span></div>
+    <div><span class="label">{{ t.result_lineage }}</span><span>{{ result.lineage or t.result_not_given }}</span></div>
+    <div><span class="label">{{ t.result_function }}</span><span>{{ result.function or t.result_not_given }}</span></div>
+    <div><span class="label">{{ t.result_migration }}</span><span>{{ result.migration or t.result_not_given }}{{ (" " ~ result.migration_subscript) if result.migration_subscript }}</span></div>
+    <div><span class="label">{{ t.result_differentiation }}</span><span>{{ result.differentiation or t.result_not_assigned }}{{ result.differentiation_subscript }}</span></div>
+    <div><span class="label">{{ t.result_antigen }}</span><span>{{ result.antigen or t.result_not_asserted }}</span></div>
   </div>
   <details class="rationale" open>
-    <summary>Why (audit trail — check before trusting the name)</summary>
+    <summary>{{ t.rationale_summary }}</summary>
     <ul>
       {% for line in result.rationale.split("\n") %}
       <li>{{ line[2:] if line.startswith("- ") else line }}</li>
@@ -24,19 +24,19 @@
 
 <form method="post" class="record-form">
   <fieldset>
-    <legend>Population identity</legend>
+    <legend>{{ t.section_identity }}</legend>
     <div class="field-row">
-      <label>Sample / population label
-        <input type="text" name="label" value="{{ form_values.get('label', '') }}" placeholder="optional">
+      <label>{{ t.label_label }}
+        <input type="text" name="label" value="{{ form_values.get('label', '') }}" placeholder="{{ t.placeholder_optional }}">
       </label>
-      <label>Tissue / location
-        <input type="text" name="location" value="{{ form_values.get('location', '') }}" placeholder="e.g. Liver">
+      <label>{{ t.label_location }}
+        <input type="text" name="location" value="{{ form_values.get('location', '') }}" placeholder="{{ t.placeholder_location }}">
       </label>
-      <label>Lineage
-        <input type="text" name="lineage" value="{{ form_values.get('lineage', '') }}" placeholder="e.g. CD8+">
+      <label>{{ t.label_lineage }}
+        <input type="text" name="lineage" value="{{ form_values.get('lineage', '') }}" placeholder="{{ t.placeholder_lineage }}">
       </label>
-      <label>Function
-        <input type="text" name="function" value="{{ form_values.get('function', '') }}" placeholder="e.g. TH1">
+      <label>{{ t.label_function }}
+        <input type="text" name="function" value="{{ form_values.get('function', '') }}" placeholder="{{ t.placeholder_function }}">
       </label>
     </div>
   </fieldset>
@@ -51,9 +51,9 @@
         <span class="marker-name" title="{{ marker_descriptions.get(marker, '') }}">{{ marker }}</span>
         <div class="marker-choices">
           {% set current = form_values.get(marker, 'NA') %}
-          <label class="pill"><input type="radio" name="{{ marker }}" value="+" {{ 'checked' if current == '+' }}> +</label>
-          <label class="pill"><input type="radio" name="{{ marker }}" value="-" {{ 'checked' if current == '-' }}> -</label>
-          <label class="pill"><input type="radio" name="{{ marker }}" value="NA" {{ 'checked' if current not in ['+', '-'] }}> not measured</label>
+          <label class="pill"><input type="radio" name="{{ marker }}" value="+" {{ 'checked' if current == '+' }}> {{ t.marker_choice_pos }}</label>
+          <label class="pill"><input type="radio" name="{{ marker }}" value="-" {{ 'checked' if current == '-' }}> {{ t.marker_choice_neg }}</label>
+          <label class="pill"><input type="radio" name="{{ marker }}" value="NA" {{ 'checked' if current not in ['+', '-'] }}> {{ t.marker_choice_na }}</label>
         </div>
         <span class="marker-desc">{{ marker_descriptions.get(marker, '') }}</span>
       </div>
@@ -63,50 +63,50 @@
   {% endfor %}
 
   <fieldset>
-    <legend>Migration subscript (only applies if migration comes out "D")</legend>
-    <p class="group-note">Never inferred from markers — only set this if you have explicit additional assay evidence.</p>
+    <legend>{{ t.section_migration_sub }}</legend>
+    <p class="group-note">{{ t.note_migration_sub }}</p>
     <div class="field-row">
-      <label>Evidence code
+      <label>{{ t.label_evidence_code }}
         <select name="migration_evidence">
-          <option value="" {{ 'selected' if not form_values.get('migration_evidence') }}>(none)</option>
-          <option value="B" {{ 'selected' if form_values.get('migration_evidence') == 'B' }}>B — blood only</option>
-          <option value="W" {{ 'selected' if form_values.get('migration_evidence') == 'W' }}>W — widespread recirculation confirmed</option>
-          <option value="R" {{ 'selected' if form_values.get('migration_evidence') == 'R' }}>R — tissue residency confirmed</option>
+          <option value="" {{ 'selected' if not form_values.get('migration_evidence') }}>{{ t.option_none }}</option>
+          <option value="B" {{ 'selected' if form_values.get('migration_evidence') == 'B' }}>{{ t.option_b }}</option>
+          <option value="W" {{ 'selected' if form_values.get('migration_evidence') == 'W' }}>{{ t.option_w }}</option>
+          <option value="R" {{ 'selected' if form_values.get('migration_evidence') == 'R' }}>{{ t.option_r }}</option>
         </select>
       </label>
-      <label class="wide">Justification
-        <input type="text" name="migration_evidence_note" value="{{ form_values.get('migration_evidence_note', '') }}" placeholder="e.g. Parabiosis confirms tissue residency">
+      <label class="wide">{{ t.label_justification }}
+        <input type="text" name="migration_evidence_note" value="{{ form_values.get('migration_evidence_note', '') }}" placeholder="{{ t.placeholder_migration_note }}">
       </label>
     </div>
   </fieldset>
 
   <fieldset>
-    <legend>Differentiation override</legend>
-    <p class="group-note">Anergic (G) is functionally defined and can't be read off markers — set it here with a justification if applicable.</p>
+    <legend>{{ t.section_diff_override }}</legend>
+    <p class="group-note">{{ t.note_diff_override }}</p>
     <div class="field-row">
-      <label>Override code
-        <input type="text" name="differentiation_override" value="{{ form_values.get('differentiation_override', '') }}" placeholder="e.g. G">
+      <label>{{ t.label_override_code }}
+        <input type="text" name="differentiation_override" value="{{ form_values.get('differentiation_override', '') }}" placeholder="{{ t.placeholder_override_code }}">
       </label>
-      <label class="wide">Justification
+      <label class="wide">{{ t.label_justification }}
         <input type="text" name="differentiation_override_note" value="{{ form_values.get('differentiation_override_note', '') }}">
       </label>
     </div>
   </fieldset>
 
   <fieldset>
-    <legend>Antigen status</legend>
-    <p class="group-note">Never inferred from markers — depends on your experimental design.</p>
+    <legend>{{ t.section_antigen }}</legend>
+    <p class="group-note">{{ t.note_antigen }}</p>
     <div class="field-row">
       {% set ag = form_values.get('antigen_status', '') %}
-      <label class="pill"><input type="radio" name="antigen_status" value="" {{ 'checked' if ag == '' }}> not asserted</label>
-      <label class="pill"><input type="radio" name="antigen_status" value="+" {{ 'checked' if ag == '+' }}> + persistent</label>
-      <label class="pill"><input type="radio" name="antigen_status" value="0" {{ 'checked' if ag == '0' }}> 0 cleared</label>
-      <label class="wide">Justification
-        <input type="text" name="antigen_note" value="{{ form_values.get('antigen_note', '') }}" placeholder="e.g. Chronic LCMV infection model">
+      <label class="pill"><input type="radio" name="antigen_status" value="" {{ 'checked' if ag == '' }}> {{ t.antigen_not_asserted }}</label>
+      <label class="pill"><input type="radio" name="antigen_status" value="+" {{ 'checked' if ag == '+' }}> {{ t.antigen_persistent }}</label>
+      <label class="pill"><input type="radio" name="antigen_status" value="0" {{ 'checked' if ag == '0' }}> {{ t.antigen_cleared }}</label>
+      <label class="wide">{{ t.label_justification }}
+        <input type="text" name="antigen_note" value="{{ form_values.get('antigen_note', '') }}" placeholder="{{ t.placeholder_antigen_note }}">
       </label>
     </div>
   </fieldset>
 
-  <button type="submit" class="primary">Generate nomenclature</button>
+  <button type="submit" class="primary">{{ t.btn_generate }}</button>
 </form>
 {% endblock %}
