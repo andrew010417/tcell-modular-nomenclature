@@ -43,17 +43,40 @@ _MIGRATION_SUBSCRIPT_LABELS = {
 }
 
 
-def classify_migration(markers: Dict[str, str], lang: str = "en") -> SlotResult:
-    """S / D / U per CD62L and CCR7.
+VALID_MIGRATION_CODES = {"S", "D", "U"}
+
+
+def classify_migration(
+    markers: Dict[str, str],
+    override: Optional[str] = None,
+    override_note: str = "",
+    lang: str = "en",
+) -> SlotResult:
+    """S / D / U per CD62L and CCR7 — or blank if neither is confirmed.
 
     S: CD62L+ AND CCR7+
     D: CD62L- and/or CCR7- (at least one confirmed negative)
-    U: neither marker measured, OR only one is measured and it is positive
-       (i.e. there isn't enough evidence to confirm either S or D — this
-       partial-data case is an explicit extension beyond the paper's literal
-       "both unmeasured" definition of U, made to keep the over-claim-avoidance
-       principle consistent; confirmed with the user).
+    blank: insufficient evidence for S or D (neither measured, or only one
+       measured and it's positive). Per the paper, migration is an optional
+       descriptor: Table 7's own examples render a fully-uncharacterized
+       cell as plain "CD4+ T cell" (no U), and Box 2's worked "CD4+ TN"
+       example omits migration entirely despite a known CD62L+ result.
+       'U' is therefore never a silent default here — it is only produced
+       via an explicit `override`, mirroring how 'G' (anergic) can only be
+       set via differentiation_override.
     """
+    if override:
+        code = override.strip().upper()
+        if code not in VALID_MIGRATION_CODES:
+            raise ValueError(f"Invalid migration_override '{override}'; must be one of {sorted(VALID_MIGRATION_CODES)} or empty.")
+        justification = override_note.strip() if override_note else ("(근거 메모 없음)" if lang == "ko" else "(no justification note provided)")
+        rationale = (
+            f"{code}: 사용자가 이동 상태를 직접 지정함. 근거: {justification}"
+            if lang == "ko"
+            else f"{code}: user-asserted migration claim. Justification: {justification}"
+        )
+        return SlotResult(code=code, rationale=rationale)
+
     cd62l = get_marker(markers, "CD62L")
     ccr7 = get_marker(markers, "CCR7")
 
@@ -74,24 +97,16 @@ def classify_migration(markers: Dict[str, str], lang: str = "en") -> SlotResult:
         )
         return SlotResult(code="D", rationale=rationale)
 
-    if cd62l == "NA" and ccr7 == "NA":
-        rationale = (
-            "U: CD62L과 CCR7 모두 측정되지 않음."
-            if lang == "ko"
-            else "U: CD62L and CCR7 both not measured."
-        )
-        return SlotResult(code="U", rationale=rationale)
-
     rationale = (
-        f"U: S 또는 D를 확정할 근거 부족 (CD62L={cd62l}, CCR7={ccr7}); "
-        "일부만 측정되었고 음성으로 확인된 마커가 없음."
+        f"이동 슬롯 비워둠: S 또는 D를 확정할 근거 부족 (CD62L={cd62l}, CCR7={ccr7}). "
+        "논문 기준 migration은 선택 항목이며, 'U'로 명시하고 싶다면 이동 상태를 직접 지정하세요."
         if lang == "ko"
         else (
-            f"U: insufficient evidence to confirm S or D (CD62L={cd62l}, CCR7={ccr7}); "
-            "only partially measured and neither marker was found negative."
+            f"Migration left blank: insufficient evidence to confirm S or D (CD62L={cd62l}, CCR7={ccr7}). "
+            "Per the paper, migration is an optional descriptor — use an explicit override to assert 'U' if desired."
         )
     )
-    return SlotResult(code="U", rationale=rationale)
+    return SlotResult(code="", rationale=rationale)
 
 
 def classify_migration_subscript(
@@ -164,10 +179,32 @@ def _activated_match(m: Dict[str, str]):
     return matched, f"CD69={cd69}, CD25={cd25}, PD1={pd1}, TOX={tox}"
 
 
+def _activated_terminal_match(m: Dict[str, str]):
+    """At (short-lived terminal effector / SLEC): KLRG1+, CD127-."""
+    klrg1, cd127 = get_marker(m, "KLRG1"), get_marker(m, "CD127")
+    matched = klrg1 == "+" and cd127 == "-"
+    return matched, f"KLRG1={klrg1}, CD127={cd127}"
+
+
+def _activated_progenitor_match(m: Dict[str, str]):
+    """Ap (memory precursor effector / MPEC): KLRG1-, CD127+, CD27+, TCF1+."""
+    klrg1, cd127, cd27, tcf1 = (get_marker(m, k) for k in ("KLRG1", "CD127", "CD27", "TCF1"))
+    matched = klrg1 == "-" and cd127 == "+" and cd27 == "+" and tcf1 == "+"
+    return matched, f"KLRG1={klrg1}, CD127={cd127}, CD27={cd27}, TCF1={tcf1}"
+
+
 def _memory_match(m: Dict[str, str]):
     ro, ra, cd69, cd25 = (get_marker(m, k) for k in ("CD45RO", "CD45RA", "CD69", "CD25"))
     matched = (ro == "+" or ra == "-") and cd69 == "-" and cd25 == "-"
     return matched, f"CD45RO={ro}, CD45RA={ra}, CD69={cd69}, CD25={cd25}"
+
+
+def _memory_progenitor_match(m: Dict[str, str]):
+    """Mp (stem-cell memory / TSCM): CD95+, CCR7+, CD27+ — CD95+ is what
+    distinguishes it from naive (which requires CD95-), per Table 4."""
+    cd95, ccr7, cd27 = (get_marker(m, k) for k in ("CD95", "CCR7", "CD27"))
+    matched = cd95 == "+" and ccr7 == "+" and cd27 == "+"
+    return matched, f"CD95={cd95}, CCR7={ccr7}, CD27={cd27}"
 
 
 def _exhausted_match(m: Dict[str, str]):
@@ -232,9 +269,19 @@ def classify_differentiation(
     x_ok, x_detail = _exhausted_match(markers)
     n_ok, n_detail = _naive_match(markers)
     a_ok, a_detail = _activated_match(markers)
+    at_ok, at_detail = _activated_terminal_match(markers)
+    ap_ok, ap_detail = _activated_progenitor_match(markers)
     m_ok, m_detail = _memory_match(markers)
+    mp_ok, mp_detail = _memory_progenitor_match(markers)
 
-    matched_codes = [c for c, ok in (("X", x_ok), ("N", n_ok), ("A", a_ok), ("M", m_ok)) if ok]
+    # At/Ap and Mp are alternative paths into A/M with their own marker
+    # basis (SLEC/MPEC and TSCM per Table 2/4), not gated behind the base
+    # A/M check — a TSCM profile (CD45RA+CCR7+CD95+) would fail the base
+    # memory check, for instance, since it looks naive except for CD95.
+    a_combined_ok = a_ok or at_ok or ap_ok
+    m_combined_ok = m_ok or mp_ok
+
+    matched_codes = [c for c, ok in (("X", x_ok), ("N", n_ok), ("A", a_combined_ok), ("M", m_combined_ok)) if ok]
     conflict_note = ""
     if len(matched_codes) > 1:
         conflict_note = (
@@ -259,20 +306,49 @@ def classify_differentiation(
             else f"N: naive criteria met ({n_detail}).{conflict_note}"
         )
         return SlotResult(code="N", rationale=rationale)
-    if a_ok:
-        rationale = (
-            f"A: 활성화(activated) 기준 충족 ({a_detail}).{conflict_note}"
+    if a_combined_ok:
+        if at_ok:
+            sub_code = "t"
+            sub_line = (
+                f"t: KLRG1+, CD127- (단명 말단 이펙터, short-lived terminal effector / SLEC) ({at_detail})."
+                if lang == "ko"
+                else f"t: KLRG1+, CD127- (short-lived terminal effector / SLEC) ({at_detail})."
+            )
+        elif ap_ok:
+            sub_code = "p"
+            sub_line = (
+                f"p: KLRG1-, CD127+, CD27+, TCF1+ (memory precursor effector / MPEC) ({ap_detail})."
+                if lang == "ko"
+                else f"p: KLRG1-, CD127+, CD27+, TCF1+ (memory precursor effector / MPEC) ({ap_detail})."
+            )
+        else:
+            sub_code = ""
+            sub_line = ""
+        prefix = (
+            f"A: 활성화(activated) 기준 충족 ({a_detail if a_ok else at_detail if at_ok else ap_detail})."
             if lang == "ko"
-            else f"A: activated criteria met ({a_detail}).{conflict_note}"
+            else f"A: activated criteria met ({a_detail if a_ok else at_detail if at_ok else ap_detail})."
         )
-        return SlotResult(code="A", rationale=rationale)
-    if m_ok:
-        rationale = (
-            f"M: memory 기준 충족 ({m_detail}).{conflict_note}"
+        rationale = f"{prefix} {sub_line}{conflict_note}".strip()
+        return SlotResult(code="A", subscript=sub_code, rationale=rationale)
+    if m_combined_ok:
+        if mp_ok:
+            sub_code = "p"
+            sub_line = (
+                f"p: CD95+, CCR7+, CD27+ (줄기세포 유사 memory, TSCM) ({mp_detail})."
+                if lang == "ko"
+                else f"p: CD95+, CCR7+, CD27+ (stem-cell memory / TSCM) ({mp_detail})."
+            )
+        else:
+            sub_code = ""
+            sub_line = ""
+        prefix = (
+            f"M: memory 기준 충족 ({m_detail if m_ok else mp_detail})."
             if lang == "ko"
-            else f"M: memory criteria met ({m_detail}).{conflict_note}"
+            else f"M: memory criteria met ({m_detail if m_ok else mp_detail})."
         )
-        return SlotResult(code="M", rationale=rationale)
+        rationale = f"{prefix} {sub_line}{conflict_note}".strip()
+        return SlotResult(code="M", subscript=sub_code, rationale=rationale)
 
     rationale = (
         "Differentiation 상태 미할당: N, A, M, X 중 어느 것도 확정할 마커 근거가 부족함. "

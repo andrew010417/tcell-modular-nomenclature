@@ -75,12 +75,29 @@ def collect_record_interactively() -> TCellRecord:
         label=label, location=location, lineage=lineage, function=function, markers=markers
     )
 
-    # Which subscripts are offered depends on the migration code: B is valid
-    # on S, D or U; W is valid on S or D; R is valid on D only (Masopust et
-    # al., Nat Rev Immunol 2026 — "Migration properties").
     from .slots import _VALID_SUBSCRIPT_BY_MIGRATION, classify_migration
 
     migration_preview = classify_migration(markers)
+    if not migration_preview.code:
+        print(
+            f"\n> Migration: {migration_preview.rationale}\n"
+            "  Per the paper, migration is an optional descriptor — leaving it blank is\n"
+            "  fine if you don't want to make a claim. Only set it if you want to\n"
+            "  explicitly assert one of S/D/U as a claim (not read off markers)."
+        )
+        if _prompt_yes_no("  Explicitly assert a migration code (S/D/U)?"):
+            while True:
+                code = _prompt("    Migration code (S/D/U)").strip().upper()
+                if code in ("S", "D", "U"):
+                    break
+                print(f"    '{code}' isn't one of S/D/U — try again.")
+            record.migration_override = code
+            record.migration_override_note = _prompt("    Justification / assay evidence")
+            migration_preview = classify_migration(markers, code, record.migration_override_note)
+
+    # Which subscripts are offered depends on the migration code: B is valid
+    # on S, D or U; W is valid on S or D; R is valid on D only (Masopust et
+    # al., Nat Rev Immunol 2026 — "Migration properties").
     valid_subscripts = sorted(_VALID_SUBSCRIPT_BY_MIGRATION.get(migration_preview.code, set()))
     if valid_subscripts:
         print(f"\n> Migration was classified as {migration_preview.code}: {migration_preview.rationale}")
@@ -168,6 +185,8 @@ def _write_records_csv(records: List[TCellRecord], out_path: str) -> None:
         ["label", "location", "lineage", "function"]
         + MARKER_NAMES
         + [
+            "migration_override",
+            "migration_override_note",
             "migration_evidence",
             "migration_evidence_note",
             "differentiation_override",
@@ -194,6 +213,8 @@ def _write_records_csv(records: List[TCellRecord], out_path: str) -> None:
                 "lineage": record.lineage,
                 "function": record.function,
                 **record.markers,
+                "migration_override": record.migration_override or "",
+                "migration_override_note": record.migration_override_note,
                 "migration_evidence": record.migration_evidence or "",
                 "migration_evidence_note": record.migration_evidence_note,
                 "differentiation_override": record.differentiation_override or "",

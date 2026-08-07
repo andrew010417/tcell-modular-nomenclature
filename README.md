@@ -9,9 +9,18 @@ Instead of a single subset label (e.g. "TRM"), the nomenclature composes a
 name from independently-evidenced slots: **Lineage · Function · Migration ·
 Differentiation state · Antigen status**. Each slot is only filled in when
 there is direct evidence for it — a slot with no supporting marker data is
-left blank (or `U` for migration's explicit "unknown" code), never guessed.
-This "silence is a legitimate result" principle is the core design
-constraint of this program; see [Design principles](#design-principles).
+left blank, never guessed. `U` (migration's explicit "unknown" code) is no
+exception: per the paper, it is only ever produced by an explicit user
+assertion, not defaulted to when data is simply missing (see
+[Migration](#migration-s--d--u)). This "silence is a legitimate result"
+principle is the core design constraint of this program; see
+[Design principles](#design-principles).
+
+This implementation has been checked line-by-line against the primary
+source — Masopust et al., "Guidelines for T cell nomenclature", *Nat Rev
+Immunol* 26:298–313 (2026) — including its Fig. 1 module definitions and
+Table 7 worked examples (several of which are reproduced verbatim in
+`tests/test_table7.py`).
 
 ## Install
 
@@ -77,10 +86,12 @@ column-by-column reference.
 spaces/underscores/hyphens):
 
 - Marker columns: `CD62L`, `CCR7`, `CD45RA`, `CD45RO`, `CD95`, `CD69`,
-  `CD25`, `PD1`/`PD-1`, `TOX`, `TCF1`, `SLAMF6`, `TIM3`, `CD101` — values
-  `+` / `-` / blank (or `NA`). Missing columns are treated as not-measured
-  for every row.
+  `CD25`, `PD1`/`PD-1`, `TOX`, `TCF1`, `SLAMF6`, `TIM3`, `CD101`, `KLRG1`,
+  `CD127`, `CD27` — values `+` / `-` / blank (or `NA`). Missing columns are
+  treated as not-measured for every row.
 - Metadata columns: `label`, `location`, `lineage`, `function`,
+  `migration_override` (`S`/`D`/`U`, explicit assertion — see
+  [Migration](#migration-s--d--u)), `migration_override_note`,
   `migration_evidence` (`B`/`W`/`R`), `migration_evidence_note`,
   `differentiation_override` (e.g. `G`), `differentiation_override_note`,
   `antigen_status` (`+`/`0`/blank), `antigen_note`.
@@ -108,6 +119,9 @@ is and which slot it feeds into:
 | `SLAMF6` | Surface marker associated with progenitor exhausted cells | Exhaustion subtype (p) |
 | `TIM3` | Surface marker associated with terminally exhausted cells | Exhaustion subtype (t) |
 | `CD101` | Surface marker associated with terminally exhausted cells | Exhaustion subtype (t) |
+| `KLRG1` | Marks short-lived terminal effector cells (SLEC) | Activated subtype (t) |
+| `CD127` | IL-7 receptor; lost on SLEC, retained on memory-precursor (MPEC) cells | Activated subtype (p/t) |
+| `CD27` | Co-stimulatory receptor retained on MPEC and stem-cell memory (TSCM) cells | Activated/Memory subtype (p) |
 
 ## Nomenclature format
 
@@ -130,8 +144,15 @@ validated against). Examples:
 |---|---|
 | CD62L+ AND CCR7+ | `S` |
 | CD62L- and/or CCR7- (at least one confirmed negative) | `D` |
-| CD62L and CCR7 both not measured | `U` |
-| Only one of CD62L/CCR7 measured, and it's positive (can't confirm S or D) | `U` (extension beyond the paper's literal wording — see code comment in `nomenclature/slots.py`) |
+| Neither confirmed (unmeasured, or only one measured and positive) | *(blank)* |
+
+Per the paper, migration is an **optional** descriptor, and `U` is not a
+silent default for missing data — Table 7's own worked examples render a
+fully-uncharacterized cell as plain `CD4+ T cell` (no `U`), and Box 2's
+"`CD4+ TN`" example omits migration entirely despite a known CD62L+ result.
+So here, `U` (or an S/D that overrides the marker-derived call) is only ever
+produced via an explicit `migration_override` + justification — the same
+pattern as `differentiation_override` for `G` (anergic).
 
 Migration subscripts are **never** inferred from markers — each requires an
 explicit user-supplied evidence code + justification, because the subscript
@@ -159,13 +180,20 @@ negative condition.
 | State | Requires |
 |---|---|
 | `X` Exhausted | PD-1+ AND TOX+ |
-| ` `↳ `p` progenitor | TCF1+, SLAMF6+, TIM3- |
-| ` `↳ `t` terminal | TCF1-, SLAMF6-, TIM3+, CD101+ |
+| ` `↳ `p` progenitor (Xp / TPEX) | TCF1+, SLAMF6+, TIM3- |
+| ` `↳ `t` terminal (Xt / TEX-term) | TCF1-, SLAMF6-, TIM3+, CD101+ |
 | `N` Naive | CCR7+ AND (CD45RA+ or CD45RO-) AND CD95- |
 | `A` Activated | (CD69+ or CD25+) AND PD-1- AND TOX- |
+| ` `↳ `p` progenitor (Ap / MPEC) | KLRG1-, CD127+, CD27+, TCF1+ |
+| ` `↳ `t` terminal (At / SLEC) | KLRG1+, CD127- |
 | `M` Memory | (CD45RO+ or CD45RA-) AND CD69- AND CD25- |
+| ` `↳ `p` progenitor (Mp / TSCM) | CD95+, CCR7+, CD27+ (an alternative path into `M`, not gated behind the base memory check above — a TSCM profile is CD45RA+/CCR7+ like naive, but CD95+ distinguishes it) |
 | `G` Anergic | never marker-derived — user override only |
 | none of the above | left blank, rationale explains what's missing |
+
+Ap/At and Mp are per Table 2 (SLEC/MPEC) and Table 4 (TSCM) of the paper —
+the modular nomenclature section itself doesn't redefine their marker basis,
+so this program reuses those existing-nomenclature marker sets as proxies.
 
 ### Antigen status (+ / 0 / blank)
 
@@ -175,35 +203,14 @@ justification note.
 ## Design principles
 
 1. **Over-claiming is the failure mode this program is built to avoid.** If
-   a marker wasn't measured, its slot stays blank/`U` — never guessed.
-2. Migration subscripts (B/W/R) are claims about additional assay evidence;
-   they require explicit user input, never auto-derived from CD62L/CCR7.
+   a marker wasn't measured, its slot stays blank — never guessed, and never
+   defaulted to a "claim" code like `U` or `G` either.
+2. Migration (S/D/U) and its subscripts (B/W/R), and differentiation's
+   `Ap`/`At`/`Mp` subscripts, are marker-derived where the paper gives a
+   marker basis; `U`, `G`, and any override are only ever set via explicit
+   user assertion + justification, never auto-derived.
 3. Antigen status is never marker-derived — always a direct user assertion.
 4. Every slot is optional; a bare lineage alone is a valid, complete run.
-
-## Known deviations from the paper
-
-Verified directly against the primary source (Masopust et al., *Nat Rev
-Immunol* 26:298–313, 2026), two gaps remain, left as-is pending a decision
-rather than silently changed:
-
-1. **Migration defaults to `U` when unmeasured; the paper treats `U` as an
-   optional, deliberate claim.** Table 7's own examples show a fully
-   uncharacterized cell rendered as just `CD4+ T cell` (no `U`), and Box 2's
-   worked example calls a CD44low/CD62L+ population `CD4+ TN` — no migration
-   letter at all, despite CD62L+ being known. This program always outputs
-   S/D/U (never blank) for the migration slot, matching this project's own
-   "never guess, but never omit either" convention rather than the paper's
-   "omit unless you want to assert unknown" convention. Changing this would
-   affect `TU`-shaped output for any record with no CD62L/CCR7 data.
-2. **`p`/`t` subscripts are only computed for `X` (exhausted).** The paper
-   describes `Ap` (memory precursor effector), `At` (short-lived terminal
-   effector) and `Mp` (stem-cell memory) as valid combinations too — this
-   program has no marker-driven path to produce those (only `differentiation_
-   override` can force an arbitrary code+subscript by hand). Adding automatic
-   Ap/At/Mp classification would need additional marker fields beyond the
-   current 13-marker panel (e.g. KLRG1, CD127, CD27 for the CD8+ effector
-   subsets Table 2 describes).
 
 ## Scope / out of scope
 
@@ -250,6 +257,7 @@ To use a different logo, replace `static/logo.png` (falls back to a plain
 python -m pytest tests/ -v
 ```
 
-Two tests reproduce the worked examples given in the project brief
-(representative of the paper's Table 7 style); the rest are additional
-logic-coverage tests written for this implementation.
+Four tests reproduce worked examples straight from the paper's Table 7
+(`Liver CD8+ TD`, `CD8+ TDRXp+`, `CD8+ TUBM`, and the prose `SW` example);
+the rest are additional logic-coverage tests written for this
+implementation.

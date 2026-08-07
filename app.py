@@ -70,6 +70,7 @@ def index():
 
     if form_values:
         markers = {name: form_values.get(name, "NA") for group in marker_groups for name in group[1]}
+        migration_override = (form_values.get("migration_override") or "").strip() or None
         migration_evidence = form_values.get("migration_evidence") or None
         differentiation_override = (form_values.get("differentiation_override") or "").strip() or None
 
@@ -79,6 +80,8 @@ def index():
             lineage=(form_values.get("lineage") or "").strip(),
             function=(form_values.get("function") or "").strip(),
             markers=markers,
+            migration_override=migration_override,
+            migration_override_note=(form_values.get("migration_override_note") or "").strip(),
             migration_evidence=migration_evidence,
             migration_evidence_note=(form_values.get("migration_evidence_note") or "").strip(),
             differentiation_override=differentiation_override,

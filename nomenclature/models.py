@@ -21,6 +21,7 @@ MARKER_NAMES = [
     "CD69", "CD25",            # recent activation
     "PD1", "TOX",              # exhaustion / chronic stimulation
     "TCF1", "SLAMF6", "TIM3", "CD101",  # exhaustion progenitor/terminal
+    "KLRG1", "CD127", "CD27",  # activated/memory progenitor-terminal (Ap/At/Mp)
 ]
 
 # One-line, plain-language meaning for each marker — shown in the CLI so
@@ -39,6 +40,9 @@ MARKER_DESCRIPTIONS = {
     "SLAMF6": "Surface marker associated with progenitor exhausted cells.",
     "TIM3": "Surface marker associated with terminally exhausted cells.",
     "CD101": "Surface marker associated with terminally exhausted cells.",
+    "KLRG1": "Killer cell lectin-like receptor; marks short-lived terminal effector cells.",
+    "CD127": "IL-7 receptor alpha; lost on short-lived effectors, retained on memory-precursor/stem-like cells.",
+    "CD27": "Co-stimulatory receptor retained on memory-precursor and stem-cell memory cells.",
 }
 
 # Markers grouped by which nomenclature slot they inform, with a short
@@ -50,6 +54,7 @@ MARKER_GROUPS = [
     ("Recent activation (CD69 / CD25)", ["CD69", "CD25"], "Determines the Activated (A) call, together with PD1/TOX below."),
     ("Chronic stimulation / exhaustion (PD1 / TOX)", ["PD1", "TOX"], "PD1+ and TOX+ together determine the Exhausted (X) call."),
     ("Exhaustion subtype (TCF1 / SLAMF6 / TIM3 / CD101)", ["TCF1", "SLAMF6", "TIM3", "CD101"], "Only relevant if X was called above — splits it into progenitor (p) or terminal (t)."),
+    ("Activated/memory subtype (KLRG1 / CD127 / CD27)", ["KLRG1", "CD127", "CD27"], "Refines Activated into progenitor (Ap) / terminal (At), and Memory into stem-cell-like progenitor (Mp)."),
 ]
 
 # Korean translations of the display-only text above (marker descriptions,
@@ -69,6 +74,9 @@ MARKER_DESCRIPTIONS_KO = {
     "SLAMF6": "전구체 소진 세포와 관련된 표면 마커입니다.",
     "TIM3": "말단 소진 세포와 관련된 표면 마커입니다.",
     "CD101": "말단 소진 세포와 관련된 표면 마커입니다.",
+    "KLRG1": "단명 말단 이펙터(short-lived terminal effector) 세포를 나타내는 killer cell lectin-like receptor입니다.",
+    "CD127": "IL-7 수용체 알파. 단명 이펙터에서는 소실되고, memory-precursor/줄기세포 유사 세포에서는 유지됩니다.",
+    "CD27": "memory-precursor 및 줄기세포 유사 memory 세포에서 유지되는 공동자극 수용체입니다.",
 }
 
 MARKER_GROUPS_KO = [
@@ -77,6 +85,7 @@ MARKER_GROUPS_KO = [
     ("최근 활성화 (CD69 / CD25)", ["CD69", "CD25"], "아래 PD1/TOX와 함께 Activated(A) 판정을 결정합니다."),
     ("만성 자극 / 소진 (PD1 / TOX)", ["PD1", "TOX"], "PD1+ 와 TOX+ 가 함께 Exhausted(X) 판정을 결정합니다."),
     ("소진 하위유형 (TCF1 / SLAMF6 / TIM3 / CD101)", ["TCF1", "SLAMF6", "TIM3", "CD101"], "위에서 X로 판정된 경우에만 관련 있음 — progenitor(p) 또는 terminal(t)로 세분화합니다."),
+    ("활성화/메모리 하위유형 (KLRG1 / CD127 / CD27)", ["KLRG1", "CD127", "CD27"], "Activated를 progenitor(Ap)/terminal(At)로, Memory를 줄기세포 유사 progenitor(Mp)로 세분화합니다."),
 ]
 
 MARKER_DESCRIPTIONS_I18N = {"en": MARKER_DESCRIPTIONS, "ko": MARKER_DESCRIPTIONS_KO}
@@ -131,8 +140,17 @@ class TCellRecord:
     function: str = ""
     markers: Dict[str, str] = field(default_factory=dict)
 
-    # Migration subscript (B/W/R) is only applicable when migration == 'D',
-    # and only if the user explicitly supplies supporting evidence.
+    # Migration (S/D/U) is normally marker-derived, but per the paper
+    # migration is an optional descriptor: if CD62L/CCR7 don't clearly
+    # support S or D, the slot is left blank rather than defaulting to 'U'.
+    # 'U' itself is only ever produced via this explicit user assertion
+    # (mirroring how 'G' anergic can only be set via differentiation_override).
+    migration_override: Optional[str] = None        # 'S' | 'D' | 'U'
+    migration_override_note: str = ""
+
+    # Migration subscript validity depends on the migration code (B: S/D/U,
+    # W: S/D, R: D only) and is never inferred from markers — only set from
+    # explicit user-supplied evidence.
     migration_evidence: Optional[str] = None       # 'B' | 'W' | 'R'
     migration_evidence_note: str = ""
 

@@ -24,7 +24,9 @@ from .slots import (
 
 
 def generate_nomenclature(record: TCellRecord, lang: str = "en") -> NomenclatureResult:
-    migration = classify_migration(record.markers, lang=lang)
+    migration = classify_migration(
+        record.markers, record.migration_override, record.migration_override_note, lang=lang
+    )
     migration_sub = classify_migration_subscript(
         migration.code, record.migration_evidence, record.migration_evidence_note, lang=lang
     )

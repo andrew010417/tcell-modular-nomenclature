@@ -7,6 +7,7 @@ spaces/underscores/hyphens):
     PD-1, ...), values '+' / '-' / blank(or 'NA') -- missing columns are
     simply treated as not-measured for every row.
   - metadata columns: label, location, lineage, function,
+    migration_override, migration_override_note,
     migration_evidence, migration_evidence_note,
     differentiation_override, differentiation_override_note,
     antigen_status, antigen_note
@@ -24,6 +25,8 @@ META_FIELDS = [
     "location",
     "lineage",
     "function",
+    "migration_override",
+    "migration_override_note",
     "migration_evidence",
     "migration_evidence_note",
     "differentiation_override",
@@ -65,6 +68,8 @@ def _row_to_record(row: Dict[str, str], header_map: Dict[str, str]) -> TCellReco
         lineage=meta("lineage"),
         function=meta("function"),
         markers=markers,
+        migration_override=meta("migration_override") or None,
+        migration_override_note=meta("migration_override_note"),
         migration_evidence=meta("migration_evidence") or None,
         migration_evidence_note=meta("migration_evidence_note"),
         differentiation_override=meta("differentiation_override") or None,

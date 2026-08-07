@@ -73,24 +73,39 @@ def test_naive_full_markers():
     assert result.nomenclature == "CD4+ TSN"
 
 
-def test_naive_migration_unknown_when_cd62l_not_measured():
+def test_naive_migration_blank_when_cd62l_not_measured():
+    # CCR7+ alone (CD62L not measured) cannot confirm S, and no marker was
+    # found negative, so migration is left blank rather than defaulted to
+    # 'U' — mirrors the paper's own Box 2 "CD4+ TN" example, where a known
+    # CD62L+ result still isn't enough to assert a migration claim.
     markers = blank_markers()
     markers["CCR7"] = "+"
     markers["CD45RA"] = "+"
     markers["CD95"] = "-"
     record = TCellRecord(markers=markers)
     result = generate_nomenclature(record)
-    # CCR7+ alone (CD62L not measured) cannot confirm S, and no marker was
-    # found negative, so migration must fall back to U.
-    assert result.migration == "U"
+    assert result.migration == ""
     assert result.differentiation == "N"
 
 
-def test_migration_both_unmeasured_is_u():
+def test_migration_both_unmeasured_is_blank_not_u():
+    # Table 7's own "no further characterization" example renders as plain
+    # "CD4+ T cell" (no U) — U is never a silent default here.
     record = TCellRecord(markers=blank_markers())
     result = generate_nomenclature(record)
+    assert result.migration == ""
+    assert "left blank" in result.rationale
+
+
+def test_migration_override_asserts_u_explicitly():
+    record = TCellRecord(
+        markers=blank_markers(),
+        migration_override="U",
+        migration_override_note="Homing receptors not assessed in this experiment.",
+    )
+    result = generate_nomenclature(record)
     assert result.migration == "U"
-    assert "both not measured" in result.rationale
+    assert "user-asserted" in result.rationale
 
 
 def test_migration_secondary_lymphoid():
@@ -125,10 +140,13 @@ def test_migration_subscript_ignored_when_not_disseminated():
 
 def test_migration_subscript_b_valid_on_unknown_migration():
     # "CD8+ TUBM" is a worked example straight from the paper's Table 7:
-    # blood-drawn, migration otherwise unmeasured, memory.
+    # blood-drawn, migration otherwise unmeasured (explicitly asserted 'U'),
+    # memory.
     record = TCellRecord(
         lineage="CD8+",
         markers=blank_markers(),
+        migration_override="U",
+        migration_override_note="Migration properties not assessed",
         migration_evidence="B",
         migration_evidence_note="Isolated from blood",
         differentiation_override="M",
@@ -154,7 +172,13 @@ def test_migration_subscript_w_valid_on_secondary_lymphoid():
 
 def test_migration_subscript_w_ignored_on_unknown_migration():
     # W is only valid on S or D, not U.
-    record = TCellRecord(markers=blank_markers(), migration_evidence="W", migration_evidence_note="irrelevant")
+    record = TCellRecord(
+        markers=blank_markers(),
+        migration_override="U",
+        migration_override_note="explicit unknown claim",
+        migration_evidence="W",
+        migration_evidence_note="irrelevant",
+    )
     result = generate_nomenclature(record)
     assert result.migration == "U"
     assert result.migration_subscript == ""
@@ -175,6 +199,45 @@ def test_exhaustion_terminal_subscript():
     assert result.differentiation_subscript == "t"
 
 
+def test_activated_terminal_subscript_slec():
+    # At (short-lived terminal effector / SLEC), per Table 2: KLRG1+, CD127-.
+    markers = blank_markers()
+    markers["KLRG1"] = "+"
+    markers["CD127"] = "-"
+    record = TCellRecord(markers=markers)
+    result = generate_nomenclature(record)
+    assert result.differentiation == "A"
+    assert result.differentiation_subscript == "t"
+
+
+def test_activated_progenitor_subscript_mpec():
+    # Ap (memory precursor effector / MPEC), per Table 2: KLRG1-, CD127+,
+    # CD27+, TCF1+.
+    markers = blank_markers()
+    markers["KLRG1"] = "-"
+    markers["CD127"] = "+"
+    markers["CD27"] = "+"
+    markers["TCF1"] = "+"
+    record = TCellRecord(markers=markers)
+    result = generate_nomenclature(record)
+    assert result.differentiation == "A"
+    assert result.differentiation_subscript == "p"
+
+
+def test_memory_progenitor_subscript_tscm():
+    # Mp (stem-cell memory / TSCM), per Table 4: CD95+, CCR7+, CD27+.
+    # Notably CD45RA+ (naive-like) rather than CD45RO+, so this would fail
+    # the base memory check — Mp is an independent path into 'M'.
+    markers = blank_markers()
+    markers["CD95"] = "+"
+    markers["CCR7"] = "+"
+    markers["CD27"] = "+"
+    record = TCellRecord(markers=markers)
+    result = generate_nomenclature(record)
+    assert result.differentiation == "M"
+    assert result.differentiation_subscript == "p"
+
+
 def test_anergic_requires_user_override():
     markers = blank_markers()
     record = TCellRecord(markers=markers, differentiation_override="G", differentiation_override_note="Functional assay: no IL-2 production upon restimulation.")
@@ -186,7 +249,7 @@ def test_anergic_requires_user_override():
 def test_no_markers_no_lineage_gives_bare_t():
     record = TCellRecord()
     result = generate_nomenclature(record)
-    assert result.nomenclature == "TU"  # migration defaults to U, everything else blank
+    assert result.nomenclature == "T"  # everything optional and unmeasured -> nothing appended
 
 
 def test_antigen_status_never_inferred_from_markers():

@@ -56,6 +56,24 @@
     </div>
   </fieldset>
 
+  <fieldset>
+    <legend>{{ t.section_migration_override }}</legend>
+    <p class="group-note">{{ t.note_migration_override }}</p>
+    <div class="field-row">
+      <label>{{ t.label_migration_override_code }}
+        <select name="migration_override">
+          <option value="" {{ 'selected' if not form_values.get('migration_override') }}>{{ t.option_migration_none }}</option>
+          <option value="S" {{ 'selected' if form_values.get('migration_override') == 'S' }}>{{ t.option_migration_s }}</option>
+          <option value="D" {{ 'selected' if form_values.get('migration_override') == 'D' }}>{{ t.option_migration_d }}</option>
+          <option value="U" {{ 'selected' if form_values.get('migration_override') == 'U' }}>{{ t.option_migration_u }}</option>
+        </select>
+      </label>
+      <label class="wide">{{ t.label_justification }}
+        <input type="text" name="migration_override_note" value="{{ form_values.get('migration_override_note', '') }}">
+      </label>
+    </div>
+  </fieldset>
+
   {% for group_title, group_markers, group_note in marker_groups %}
   <fieldset>
     <legend>{{ group_title }}</legend>
