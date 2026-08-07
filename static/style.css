@@ -93,24 +93,31 @@ body {
 h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
 .subtitle { color: var(--muted); max-width: 65ch; margin-top: 0; }
 
-.hero-grid {
-  display: flex;
-  gap: 2rem;
-  align-items: stretch;
-  margin-bottom: 1.75rem;
-  flex-wrap: wrap;
-}
-
-.hero-text { flex: 1 1 420px; }
+.hero-text { margin-bottom: 1.5rem; }
 
 .hero-card {
-  flex: 1 1 360px;
-  max-width: 420px;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
   background: var(--card);
   border: 1px solid var(--border);
   border-top: 3px solid var(--orange);
   border-radius: 10px;
   padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.hero-card-col { flex: 1 1 320px; }
+
+.hero-card-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+}
+
+@media (max-width: 720px) {
+  .hero-card-divider { display: none; }
 }
 
 .hero-card h2 {
@@ -122,12 +129,6 @@ h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
   font-size: 0.88rem;
   color: var(--muted);
   margin: 0;
-}
-
-.hero-card hr {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 1rem 0;
 }
 
 .example-buttons {

@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
 {% block hero %}
-<div class="hero-grid">
-  <div class="hero-text">
-    <h1>{{ t.heading }}</h1>
-    <p class="subtitle">{{ t.subtitle }}</p>
-  </div>
-  <aside class="hero-card">
+<div class="hero-text">
+  <h1>{{ t.heading }}</h1>
+  <p class="subtitle">{{ t.subtitle }}</p>
+</div>
+<aside class="hero-card">
+  <div class="hero-card-col">
     <h2>{{ t.hero_what_title }}</h2>
     <p>{{ t.hero_what_body }}</p>
-    <hr>
+  </div>
+  <div class="hero-card-divider"></div>
+  <div class="hero-card-col">
     <h2>{{ t.hero_try_title }}</h2>
     <div class="example-buttons">
       <a class="example-btn" href="{{ url_for('index', example='naive') }}">
@@ -22,8 +24,8 @@
       </a>
     </div>
     <p class="hero-hint">{{ t.hero_example_hint }}</p>
-  </aside>
-</div>
+  </div>
+</aside>
 {% endblock %}
 
 {% block content %}
