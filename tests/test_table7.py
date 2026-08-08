@@ -1,4 +1,4 @@
-"""Unit tests.
+"""Unit tests: Table 7 worked examples plus core classification logic.
 
 Four cases come verbatim from Table 7 of Masopust et al., "Guidelines for
 T cell nomenclature", Nat Rev Immunol 26:298-313 (2026):
@@ -6,8 +6,12 @@ test_liver_cd8_disseminated_unknown_recency ("Liver CD8+ TD"),
 test_cd8_disseminated_resident_exhausted_progenitor_persistent
 ("CD8+ TDRXp+"), test_migration_subscript_b_valid_on_unknown_migration
 ("CD8+ TUBM"), and test_migration_subscript_w_valid_on_secondary_lymphoid
-(the paper's prose "SW" example). The rest are additional logic-coverage
-tests authored for this implementation.
+(the paper's prose "SW" example). The rest are logic-coverage tests
+authored for this implementation (migration blank/override mechanics,
+subscript validity, conflict warnings, CSV round-trip, etc.).
+
+For a broader cross-check against the paper's Tables 1-6 (named subsets
+like TCM, TEM, TPEX, SLEC, ...), see tests/test_named_subsets.py.
 """
 import csv
 import os
@@ -197,45 +201,6 @@ def test_exhaustion_terminal_subscript():
     result = generate_nomenclature(record)
     assert result.differentiation == "X"
     assert result.differentiation_subscript == "t"
-
-
-def test_activated_terminal_subscript_slec():
-    # At (short-lived terminal effector / SLEC), per Table 2: KLRG1+, CD127-.
-    markers = blank_markers()
-    markers["KLRG1"] = "+"
-    markers["CD127"] = "-"
-    record = TCellRecord(markers=markers)
-    result = generate_nomenclature(record)
-    assert result.differentiation == "A"
-    assert result.differentiation_subscript == "t"
-
-
-def test_activated_progenitor_subscript_mpec():
-    # Ap (memory precursor effector / MPEC), per Table 2: KLRG1-, CD127+,
-    # CD27+, TCF1+.
-    markers = blank_markers()
-    markers["KLRG1"] = "-"
-    markers["CD127"] = "+"
-    markers["CD27"] = "+"
-    markers["TCF1"] = "+"
-    record = TCellRecord(markers=markers)
-    result = generate_nomenclature(record)
-    assert result.differentiation == "A"
-    assert result.differentiation_subscript == "p"
-
-
-def test_memory_progenitor_subscript_tscm():
-    # Mp (stem-cell memory / TSCM), per Table 4: CD95+, CCR7+, CD27+.
-    # Notably CD45RA+ (naive-like) rather than CD45RO+, so this would fail
-    # the base memory check — Mp is an independent path into 'M'.
-    markers = blank_markers()
-    markers["CD95"] = "+"
-    markers["CCR7"] = "+"
-    markers["CD27"] = "+"
-    record = TCellRecord(markers=markers)
-    result = generate_nomenclature(record)
-    assert result.differentiation == "M"
-    assert result.differentiation_subscript == "p"
 
 
 def test_anergic_requires_user_override():

@@ -257,7 +257,16 @@ To use a different logo, replace `static/logo.png` (falls back to a plain
 python -m pytest tests/ -v
 ```
 
-Four tests reproduce worked examples straight from the paper's Table 7
-(`Liver CD8+ TD`, `CD8+ TDRXp+`, `CD8+ TUBM`, and the prose `SW` example);
-the rest are additional logic-coverage tests written for this
-implementation.
+Two layers of validation against the primary source:
+
+- `tests/test_table7.py` — four cases reproduce worked examples straight
+  from the paper's own Table 7 (`Liver CD8+ TD`, `CD8+ TDRXp+`, `CD8+ TUBM`,
+  and the prose `SW` example); the rest are logic-coverage tests for this
+  implementation (migration blank/override mechanics, subscript validity,
+  conflict warnings, CSV round-trip, etc.).
+- `tests/test_named_subsets.py` — cross-checks against the *existing*-
+  nomenclature marker definitions the paper gives for well-known named
+  subsets in Tables 1-6 (TCM, TEM, TEMRA, TRM, TSCM, SLEC, MPEC, TPEX,
+  TEX-int, TEX-term), verifying each maps to the modular code the paper
+  itself assigns it — including two cases (TEMRA, TRM) where the correct
+  behavior is to leave a slot unassigned rather than force a guess.
